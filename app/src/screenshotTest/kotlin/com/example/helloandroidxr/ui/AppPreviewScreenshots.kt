@@ -17,7 +17,6 @@
 package com.example.helloandroidxr.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.helloandroidxr.ui.theme.HelloAndroidXRTheme
 import com.example.helloandroidxr.ui.components.SearchTextBox
