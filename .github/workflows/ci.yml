@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -30,7 +30,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew assemble
 
       - name: Test
         run: ./gradlew test
+
+      - name: Screenshot Test
+        run: ./gradlew validateDebugScreenshotTest
