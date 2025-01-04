@@ -6,7 +6,7 @@ compose = "1.0.0-alpha01"
 impress = "0.0.1"
 kotlinxCoroutinesGuava = "1.9.0"
 scenecore = "1.0.0-alpha01"
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 concurrentFuturesKtx = "1.2.0"
 activityCompose = "1.10.0-beta01"
 composeBom = "2024.11.00"
@@ -31,6 +31,6 @@ androidx-adaptive-android = { group = "androidx.compose.material3.adaptive", nam
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.0.21" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.1.0" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 screenshot = { id = "com.android.compose.screenshot", version.ref = "screenshot" }
