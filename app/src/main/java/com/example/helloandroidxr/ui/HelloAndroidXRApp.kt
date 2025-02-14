@@ -16,6 +16,8 @@
 
 package com.example.helloandroidxr.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -71,7 +73,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HelloAndroidXRApp() {
-    if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        && LocalSpatialCapabilities.current.isSpatialUiEnabled
+    ) {
         SpatialLayout(
             primaryContent = { PrimaryContent() },
             firstSupportingContent = { BlockOfContentOne() },
@@ -91,6 +95,7 @@ fun HelloAndroidXRApp() {
 /**
  * Layout that displays content in [SpatialPanel]s, should be used when spatial UI is enabled.
  */
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 private fun SpatialLayout(
     primaryContent: @Composable () -> Unit,
@@ -210,7 +215,7 @@ private fun TopAndBottomPaneLayout(
     modifier: Modifier = Modifier
 ) {
     Column(modifier.verticalScroll(rememberScrollState())) {
-        Surface(Modifier.requiredHeight(500.dp)){
+        Surface(Modifier.requiredHeight(500.dp)) {
             primaryPane()
         }
         Spacer(Modifier.height(16.dp))
@@ -232,27 +237,38 @@ private fun TopAndBottomPaneLayout(
  */
 @Composable
 private fun TopAppBar() {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .height(IntrinsicSize.Min)
-            .fillMaxWidth()
-    ) {
-        Spacer(Modifier.weight(1f))
-        Orbiter(
-            position = OrbiterEdge.Top,
-            offset = dimensionResource(R.dimen.top_ornament_padding),
-            alignment = Alignment.Start
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .fillMaxWidth()
+        ) {
+            Spacer(Modifier.weight(1f))
+            Orbiter(
+                position = OrbiterEdge.Top,
+                offset = dimensionResource(R.dimen.top_ornament_padding),
+                alignment = Alignment.Start
+            ) {
+                SearchBar()
+            }
+            Spacer(Modifier.weight(1f))
+            Orbiter(
+                position = OrbiterEdge.Top,
+                offset = dimensionResource(R.dimen.top_ornament_padding),
+                alignment = Alignment.End
+            ) {
+                EnvironmentControls()
+            }
+        }
+    } else {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .fillMaxWidth()
         ) {
             SearchBar()
-        }
-        Spacer(Modifier.weight(1f))
-        Orbiter(
-            position = OrbiterEdge.Top,
-            offset = dimensionResource(R.dimen.top_ornament_padding),
-            alignment = Alignment.End
-        ) {
-            EnvironmentControls()
         }
     }
 }

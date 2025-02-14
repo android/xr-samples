@@ -16,8 +16,10 @@
 
 package com.example.helloandroidxr.ui.components
 
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -50,6 +52,7 @@ import com.example.helloandroidxr.ui.theme.HelloAndroidXRTheme
 /**
  * Controls for changing the user's Environment, and toggling between Home Space and Full Space
  */
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun EnvironmentControls(modifier: Modifier = Modifier) {
     // If we aren't able to access the session, these buttons wouldn't work and shouldn't be shown

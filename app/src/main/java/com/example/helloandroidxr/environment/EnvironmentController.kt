@@ -16,7 +16,9 @@
 
 package com.example.helloandroidxr.environment
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.concurrent.futures.await
 import androidx.xr.scenecore.GltfModel
 import androidx.xr.scenecore.Session
@@ -24,14 +26,18 @@ import androidx.xr.scenecore.SpatialEnvironment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-class EnvironmentController(private val xrSession: Session, private val coroutineScope: CoroutineScope) {
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+class EnvironmentController(
+    private val xrSession: Session,
+    private val coroutineScope: CoroutineScope
+) {
 
     private val assetCache: HashMap<String, Any> = HashMap()
     private var activeEnvironmentModelName: String? = null
 
-    fun requestHomeSpaceMode() = xrSession.requestHomeSpaceMode()
+    fun requestHomeSpaceMode() = xrSession.spatialEnvironment.requestHomeSpaceMode()
 
-    fun requestFullSpaceMode() = xrSession.requestFullSpaceMode()
+    fun requestFullSpaceMode() = xrSession.spatialEnvironment.requestFullSpaceMode()
 
     fun requestPassthrough() = xrSession.spatialEnvironment.setPassthroughOpacityPreference(1f)
 
@@ -73,8 +79,10 @@ class EnvironmentController(private val xrSession: Session, private val coroutin
             //load the asset if it hasn't been loaded previously
             if (!assetCache.containsKey(modelName)){
                 try {
-                    val gltfModel =
-                        xrSession.createGltfResourceAsync(modelName).await()
+                    val gltfModel = GltfModel.create(
+                        session = xrSession,
+                        name = modelName
+                    ).await()
 
                     assetCache[modelName] = gltfModel
 
