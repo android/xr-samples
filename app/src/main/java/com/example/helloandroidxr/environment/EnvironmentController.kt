@@ -29,9 +29,9 @@ class EnvironmentController(private val xrSession: Session, private val coroutin
     private val assetCache: HashMap<String, Any> = HashMap()
     private var activeEnvironmentModelName: String? = null
 
-    fun requestHomeSpaceMode() = xrSession.requestHomeSpaceMode()
+    fun requestHomeSpaceMode() = xrSession.spatialEnvironment.requestHomeSpaceMode()
 
-    fun requestFullSpaceMode() = xrSession.requestFullSpaceMode()
+    fun requestFullSpaceMode() = xrSession.spatialEnvironment.requestFullSpaceMode()
 
     fun requestPassthrough() = xrSession.spatialEnvironment.setPassthroughOpacityPreference(1f)
 
@@ -73,8 +73,7 @@ class EnvironmentController(private val xrSession: Session, private val coroutin
             //load the asset if it hasn't been loaded previously
             if (!assetCache.containsKey(modelName)){
                 try {
-                    val gltfModel =
-                        xrSession.createGltfResourceAsync(modelName).await()
+                    val gltfModel = GltfModel.create(xrSession, modelName).await()
 
                     assetCache[modelName] = gltfModel
 

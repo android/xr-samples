@@ -1,17 +1,17 @@
 [versions]
-androidx-runtime = "1.8.0-alpha06"
-agp = "8.6.1"
-arcore = "1.0.0-alpha01"
-compose = "1.0.0-alpha01"
-impress = "0.0.1"
+androidx-runtime = "1.8.0-beta02"
+agp = "8.8.1"
+arcore = "1.0.0-alpha02"
+compose = "1.0.0-alpha02"
+impress = "0.0.2"
 kotlinxCoroutinesGuava = "1.9.0"
-scenecore = "1.0.0-alpha01"
-kotlin = "2.0.21"
+scenecore = "1.0.0-alpha02"
+kotlin = "2.1.0"
 concurrentFuturesKtx = "1.2.0"
-activityCompose = "1.10.0-beta01"
-composeBom = "2024.11.00"
+activityCompose = "1.10.0"
+composeBom = "2025.02.00"
 material = "1.12.0"
-screenshot = "0.0.1-alpha08"
+screenshot = "0.0.1-alpha09"
 adaptiveAndroid = "1.0.0"
 
 [libraries]
@@ -31,6 +31,6 @@ androidx-adaptive-android = { group = "androidx.compose.material3.adaptive", nam
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.0.21" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.1.0" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 screenshot = { id = "com.android.compose.screenshot", version.ref = "screenshot" }
