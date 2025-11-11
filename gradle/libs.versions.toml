@@ -13,6 +13,8 @@ composeBom = "2025.08.00"
 material = "1.12.0"
 adaptiveAndroid = "1.1.0"
 kotlinAndroid = "2.2.0"
+androidxLifecycle = "2.9.3"
+androidxNavigation = "2.9.3"
 
 [libraries]
 androidx-arcore = { module = "androidx.xr.arcore:arcore", version.ref = "arcore" }
@@ -28,6 +30,10 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-runtime" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-adaptive-android = { group = "androidx.compose.material3.adaptive", name = "adaptive-android", version.ref = "adaptiveAndroid" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidxNavigation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
