@@ -6,7 +6,12 @@
       "Bash(rm:*)",
       "Bash(./gradlew clean:*)",
       "Bash(./gradlew assembleDebug:*)",
-      "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "Bash(adb logcat:*)",
+      "Bash(adb install:*)",
+      "Bash(adb shell am start:*)",
+      "Bash(adb shell am:*)",
+      "Bash(adb shell:*)"
     ],
     "deny": [],
     "ask": []
