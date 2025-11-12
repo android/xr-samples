@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "169794284900",
+    "project_id": "instaxr-1c1fa",
+    "storage_bucket": "instaxr-1c1fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169794284900:android:e38e73fa3c5c8da8f15e71",
+        "android_client_info": {
+          "package_name": "com.appbuildchat.instaxr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLR8_EibH6BjdMmYo7ZlIq-l7Yd8gF11E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

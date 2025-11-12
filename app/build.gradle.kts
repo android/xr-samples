@@ -18,14 +18,15 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.helloandroidxr"
+    namespace = "com.appbuildchat.instaxr"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.helloandroidxr"
+        applicationId = "com.appbuildchat.instaxr"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -83,4 +84,13 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.androidx.compose.ui.tooling)
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    // Firestore
+    implementation("com.google.firebase:firebase-firestore")
+
+    // Cloud Storage
+    implementation("com.google.firebase:firebase-storage")
 }
