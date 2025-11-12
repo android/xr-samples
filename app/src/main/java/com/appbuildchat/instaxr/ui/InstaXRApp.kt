@@ -39,9 +39,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.compose.platform.LocalSpatialConfiguration
+import androidx.xr.compose.spatial.ApplicationSubspace
 import androidx.xr.compose.spatial.ContentEdge
 import androidx.xr.compose.spatial.Orbiter
-import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.subspace.MovePolicy
 import androidx.xr.compose.subspace.ResizePolicy
 import androidx.xr.compose.subspace.SpatialPanel
@@ -51,7 +51,7 @@ import androidx.xr.compose.subspace.layout.width
 
 /**
  * Main InstaXR App composable
- * Supports both Spatial and Non-Spatial modes
+ * Uses ApplicationSubspace at the top level
  */
 @SuppressLint("RestrictedApi")
 @Composable
@@ -59,12 +59,14 @@ fun InstaXRApp() {
     val spatialConfiguration = LocalSpatialConfiguration.current
 
     if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
-        Subspace {
-            MySpatialContent(
+        // XR Mode - with ApplicationSubspace at top level
+        ApplicationSubspace {
+            SpatialContent(
                 onRequestHomeSpaceMode = spatialConfiguration::requestHomeSpaceMode
             )
         }
     } else {
+        // 2D Mode - regular navigation with mode switch button
         My2DContent(
             onRequestFullSpaceMode = spatialConfiguration::requestFullSpaceMode
         )
@@ -72,39 +74,42 @@ fun InstaXRApp() {
 }
 
 /**
- * Spatial content for Full Space mode (XR immersive)
+ * Spatial content for XR mode
+ * Observes HomeViewModel to switch between normal navigation and expanded 3-panel layout
  */
 @SuppressLint("RestrictedApi")
 @Composable
-fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit) {
+fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
-    // Main Panel - Content with Navigation Orbiter
-    SpatialPanel(
-        modifier = SubspaceModifier
-            .width(680.dp)
-            .height(800.dp),
-        dragPolicy = MovePolicy(isEnabled = true),
-        resizePolicy = ResizePolicy(isEnabled = true)
-    ) {
-        Surface {
-            AppNavigation(navController = navController)
-        }
+    // Check if we're on home route
+    val isHomeRoute = currentRoute == AppRoutes.HOME
 
-        // Home Space Mode Button (Top Right)
-        Orbiter(
-            position = ContentEdge.Bottom,
-            offset = 20.dp,
-            alignment = Alignment.End
-        ) {
-            HomeSpaceModeIconButton(
-                onClick = onRequestHomeSpaceMode,
-                modifier = Modifier.size(56.dp)
-            )
-        }
+    // Get HomeViewModel from the nav back stack entry for the home route
+    // This ensures we get the SAME instance that HomeScreen is using
+    val homeBackStackEntry = navController.currentBackStackEntry
+    val homeViewModel: com.appbuildchat.instaxr.ui.home.HomeViewModel? =
+        if (isHomeRoute && homeBackStackEntry != null) {
+            androidx.lifecycle.viewmodel.compose.viewModel(viewModelStoreOwner = homeBackStackEntry)
+        } else null
 
-        // Bottom Navigation Orbiter (Center)
+    val homeUiState = homeViewModel?.uiState?.collectAsState()?.value
+    val hasSelectedPost = (homeUiState as? com.appbuildchat.instaxr.ui.home.HomeUiState.Success)?.selectedPost != null
+
+    // DEBUG logging
+    android.util.Log.d("InstaXRApp", "isHomeRoute=$isHomeRoute, hasSelectedPost=$hasSelectedPost, homeViewModel=$homeViewModel, homeUiState=$homeUiState")
+
+    // If on home with selected post, show three spatial panels
+    if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
+        android.util.Log.d("InstaXRApp", "SHOWING 3 PANELS!!!")
+        // EXPANDED STATE: Three separate spatial panels
+        com.appbuildchat.instaxr.ui.home.HomeScreenSpatialPanelsAnimated(
+            uiState = homeUiState,
+            onAction = homeViewModel::handleAction
+        )
+
+        // Still show navigation orbiter
         Orbiter(
             position = ContentEdge.Bottom,
             offset = 100.dp,
@@ -121,23 +126,92 @@ fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
-                        navController.navigateSingleTopTo(AppRoutes.HOME)
+                    NavigationItem(Icons.Default.Home, "Home", true) {
+                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                     }
-                    NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
+                    NavigationItem(Icons.Default.Search, "Search", false) {
+                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.SEARCH)
                     }
-                    NavigationItem(Icons.Default.Add, "Add", currentRoute == AppRoutes.ADD_POST) {
+                    NavigationItem(Icons.Default.Add, "Add", false) {
+                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.ADD_POST)
                     }
-                    NavigationItem(Icons.Default.Email, "Messages", currentRoute == AppRoutes.MESSAGES) {
+                    NavigationItem(Icons.Default.Email, "Messages", false) {
+                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.MESSAGES)
                     }
-                    NavigationItem(Icons.Default.Person, "My Page", currentRoute == AppRoutes.MY_PAGE) {
+                    NavigationItem(Icons.Default.Person, "My Page", false) {
+                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
                     }
-                    NavigationItem(Icons.Default.Settings, "Settings", currentRoute == AppRoutes.SETTINGS) {
+                    NavigationItem(Icons.Default.Settings, "Settings", false) {
+                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                    }
+                }
+            }
+        }
+    } else {
+        // NORMAL STATE: Main spatial panel with navigation
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(680.dp)
+                .height(800.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
+        ) {
+            Surface {
+                AppNavigation(navController = navController)
+            }
+
+            // Home Space Mode Button (Top Right)
+            Orbiter(
+                position = ContentEdge.Bottom,
+                offset = 20.dp,
+                alignment = Alignment.End
+            ) {
+                HomeSpaceModeIconButton(
+                    onClick = onRequestHomeSpaceMode,
+                    modifier = Modifier.size(56.dp)
+                )
+            }
+
+            // Bottom Navigation Orbiter
+            Orbiter(
+                position = ContentEdge.Bottom,
+                offset = 100.dp,
+                alignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    modifier = Modifier.clip(RoundedCornerShape(28.dp)),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    tonalElevation = 3.dp,
+                    shadowElevation = 8.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
+                            navController.navigateSingleTopTo(AppRoutes.HOME)
+                        }
+                        NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
+                            navController.navigateSingleTopTo(AppRoutes.SEARCH)
+                        }
+                        NavigationItem(Icons.Default.Add, "Add", currentRoute == AppRoutes.ADD_POST) {
+                            navController.navigateSingleTopTo(AppRoutes.ADD_POST)
+                        }
+                        NavigationItem(Icons.Default.Email, "Messages", currentRoute == AppRoutes.MESSAGES) {
+                            navController.navigateSingleTopTo(AppRoutes.MESSAGES)
+                        }
+                        NavigationItem(Icons.Default.Person, "My Page", currentRoute == AppRoutes.MY_PAGE) {
+                            navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
+                        }
+                        NavigationItem(Icons.Default.Settings, "Settings", currentRoute == AppRoutes.SETTINGS) {
+                            navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                        }
                     }
                 }
             }
@@ -146,7 +220,7 @@ fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit) {
 }
 
 /**
- * 2D content for Home Space mode (non-spatial)
+ * 2D content for Home Space mode
  */
 @SuppressLint("RestrictedApi")
 @Composable
@@ -258,7 +332,7 @@ private fun NavigationItem(
 }
 
 /**
- * Home Space Mode button to switch from Full Space to Home Space
+ * Home Space Mode button
  */
 @Composable
 fun HomeSpaceModeIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -271,7 +345,7 @@ fun HomeSpaceModeIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) 
 }
 
 /**
- * Full Space Mode button to switch from Home Space to Full Space
+ * Full Space Mode button
  */
 @Composable
 fun FullSpaceModeIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {

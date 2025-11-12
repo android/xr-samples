@@ -1,6 +1,7 @@
 package com.appbuildchat.instaxr.data.local
 
 import android.content.Context
+import com.appbuildchat.instaxr.data.model.Comment
 import com.appbuildchat.instaxr.data.model.Post
 import com.appbuildchat.instaxr.data.model.User
 import kotlinx.serialization.Serializable
@@ -99,7 +100,8 @@ object MockDataLoader {
                     commentCount = mockPost.comments,
                     isLiked = false,
                     isSaved = false,
-                    timestamp = parseTimestamp(mockPost.timestamp)
+                    timestamp = parseTimestamp(mockPost.timestamp),
+                    comments = generateMockComments(mockPost.id, users.values.toList())
                 )
             }
         } catch (e: IOException) {
@@ -118,6 +120,41 @@ object MockDataLoader {
             System.currentTimeMillis()
         } catch (e: Exception) {
             System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * Generate mock comments for a post
+     */
+    private fun generateMockComments(postId: String, users: List<User>): List<Comment> {
+        if (users.isEmpty()) return emptyList()
+
+        val commentTexts = listOf(
+            "Amazing shot! 😍",
+            "Love this!",
+            "This is incredible!",
+            "So beautiful! 🔥",
+            "Great work!",
+            "Stunning! 💯",
+            "Wow! Just wow!",
+            "This is perfect!",
+            "Absolutely gorgeous!",
+            "Can't stop looking at this! ❤️"
+        )
+
+        return List(kotlin.random.Random.nextInt(2, 6)) { index ->
+            val randomUser = users.random()
+            Comment(
+                id = "${postId}_comment_$index",
+                postId = postId,
+                userId = randomUser.id,
+                username = randomUser.username,
+                userProfileImageUrl = randomUser.profileImageUrl,
+                text = commentTexts.random(),
+                likeCount = kotlin.random.Random.nextInt(0, 50),
+                isLiked = false,
+                timestamp = System.currentTimeMillis() - kotlin.random.Random.nextLong(1000000)
+            )
         }
     }
 }
