@@ -18,14 +18,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp")
+    alias(libs.plugins.hilt.android)
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.helloandroidxr"
+    namespace = "com.appbuildchat.instaxr"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.helloandroidxr"
+        applicationId = "com.appbuildchat.instaxr"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -74,5 +77,24 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.activity.compose)
 
+    // Lifecycle dependencies for ViewModel and Compose integration
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Navigation for Compose
+    implementation(libs.androidx.navigation.compose)
+
     implementation(libs.androidx.compose.ui.tooling)
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 }

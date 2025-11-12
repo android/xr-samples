@@ -1,0 +1,52 @@
+package com.appbuildchat.instaxr.data.repository
+
+import com.appbuildchat.instaxr.data.model.Chat
+import com.appbuildchat.instaxr.data.model.Message
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import javax.inject.Inject
+
+/**
+ * Repository interface for Message and Chat data
+ */
+interface MessageRepository {
+    fun getChats(): Flow<List<Chat>>
+    fun getMessages(chatId: String): Flow<List<Message>>
+    suspend fun sendMessage(chatId: String, content: String): Result<Message>
+    suspend fun markMessageAsRead(messageId: String): Result<Unit>
+    suspend fun deleteMessage(messageId: String): Result<Unit>
+}
+
+/**
+ * Default implementation of MessageRepository with Firestore
+ */
+class DefaultMessageRepository @Inject constructor(
+    private val firestore: FirebaseFirestore
+) : MessageRepository {
+
+    override fun getChats(): Flow<List<Chat>> {
+        // TODO: Implement actual data fetching from local/remote sources
+        return flowOf(emptyList())
+    }
+
+    override fun getMessages(chatId: String): Flow<List<Message>> {
+        // TODO: Implement actual data fetching
+        return flowOf(emptyList())
+    }
+
+    override suspend fun sendMessage(chatId: String, content: String): Result<Message> {
+        // TODO: Implement send message logic
+        return Result.failure(NotImplementedError("Not yet implemented"))
+    }
+
+    override suspend fun markMessageAsRead(messageId: String): Result<Unit> {
+        // TODO: Implement mark as read logic
+        return Result.success(Unit)
+    }
+
+    override suspend fun deleteMessage(messageId: String): Result<Unit> {
+        // TODO: Implement delete message logic
+        return Result.success(Unit)
+    }
+}
