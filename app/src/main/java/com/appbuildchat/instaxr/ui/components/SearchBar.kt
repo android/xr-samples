@@ -47,7 +47,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.appbuildchat.instaxr.R
-import com.appbuildchat.instaxr.ui.theme.HelloAndroidXRTheme
+import com.appbuildchat.instaxr.ui.theme.InstaXRTheme
 
 /**
  * A search textbox that expands its surface when spatial UI is enabled
@@ -117,7 +117,7 @@ private fun showNotImplementedToast(query: String, context: Context) {
 @Preview(device = "spec:width=1920dp,height=1080dp,dpi=160")
 @Preview(device = "spec:width=411dp,height=891dp")
 fun SearchTextBoxPreview() {
-    HelloAndroidXRTheme {
+    InstaXRTheme {
         SearchTextBox(onSearch = {})
     }
 }

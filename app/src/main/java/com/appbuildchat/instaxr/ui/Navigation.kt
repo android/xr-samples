@@ -9,22 +9,19 @@ import androidx.navigation.compose.rememberNavController
 import com.appbuildchat.instaxr.ui.home.HomeScreen
 import com.appbuildchat.instaxr.ui.messages.MessagesScreen
 import com.appbuildchat.instaxr.ui.profile.ProfileScreen
-import com.appbuildchat.instaxr.ui.reels.ReelsScreen
 import com.appbuildchat.instaxr.ui.search.SearchScreen
 import com.appbuildchat.instaxr.ui.settings.SettingsScreen
-import com.appbuildchat.instaxr.ui.stories.StoriesScreen
 
 /**
  * Main navigation routes for the app
  */
 object AppRoutes {
     const val HOME = "home"
-    const val REELS = "reels"
-    const val STORIES = "stories"
+    const val MY_PAGE = "mypage"
     const val SEARCH = "search"
     const val MESSAGES = "messages"
-    const val PROFILE = "profile"
     const val SETTINGS = "settings"
+    const val ADD_POST = "addpost"
 }
 
 /**
@@ -43,51 +40,32 @@ fun AppNavigation(
     ) {
         // Home Screen
         composable(route = AppRoutes.HOME) {
-            @Composable {
-                HomeScreen()
-            }
+            HomeScreen()
         }
 
-        // Reels Screen
-        composable(route = AppRoutes.REELS) {
-            @Composable {
-                ReelsScreen()
-            }
-        }
-
-        // Stories Screen
-        composable(route = AppRoutes.STORIES) {
-            @Composable {
-                StoriesScreen()
-            }
+        // My Page (Profile) Screen
+        composable(route = AppRoutes.MY_PAGE) {
+            ProfileScreen()
         }
 
         // Search Screen
         composable(route = AppRoutes.SEARCH) {
-            @Composable {
-                SearchScreen()
-            }
+            SearchScreen()
         }
 
         // Messages Screen
         composable(route = AppRoutes.MESSAGES) {
-            @Composable {
-                MessagesScreen()
-            }
-        }
-
-        // Profile Screen
-        composable(route = AppRoutes.PROFILE) {
-            @Composable {
-                ProfileScreen()
-            }
+            MessagesScreen()
         }
 
         // Settings Screen
         composable(route = AppRoutes.SETTINGS) {
-            @Composable {
-                SettingsScreen()
-            }
+            SettingsScreen()
+        }
+
+        // Add Post Screen (placeholder for now)
+        composable(route = AppRoutes.ADD_POST) {
+            HomeScreen() // TODO: Create AddPostScreen
         }
     }
 }

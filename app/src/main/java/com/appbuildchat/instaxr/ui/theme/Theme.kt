@@ -49,7 +49,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun HelloAndroidXRTheme(
+fun InstaXRTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,

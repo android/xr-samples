@@ -24,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.appbuildchat.instaxr.ui.theme.HelloAndroidXRTheme
+import com.appbuildchat.instaxr.ui.theme.InstaXRTheme
 
 @Composable
 fun TextPane(text: String, modifier: Modifier = Modifier) {
@@ -36,7 +36,7 @@ fun TextPane(text: String, modifier: Modifier = Modifier) {
 @Composable
 @Preview
 private fun MyLayOutPreview() {
-    HelloAndroidXRTheme {
+    InstaXRTheme {
         TextPane(modifier = Modifier, text = "Primary")
     }
 }

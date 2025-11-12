@@ -20,8 +20,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.appbuildchat.instaxr.ui.HelloAndroidXRApp
-import com.appbuildchat.instaxr.ui.theme.HelloAndroidXRTheme
+import com.appbuildchat.instaxr.ui.InstaXRApp
+import com.appbuildchat.instaxr.ui.theme.InstaXRTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -30,8 +30,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            HelloAndroidXRTheme {
-                HelloAndroidXRApp()
+            InstaXRTheme {
+                InstaXRApp()
             }
         }
     }

@@ -45,7 +45,7 @@ import androidx.xr.compose.platform.LocalSession
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import com.appbuildchat.instaxr.R
 import com.appbuildchat.instaxr.environment.EnvironmentController
-import com.appbuildchat.instaxr.ui.theme.HelloAndroidXRTheme
+import com.appbuildchat.instaxr.ui.theme.InstaXRTheme
 
 /**
  * Controls for changing the user's Environment, and toggling between Home Space and Full Space
@@ -155,7 +155,7 @@ private fun RequestFullSpaceButton(onclick: () -> Unit) {
 @Preview
 @Composable
 private fun PreviewSetVirtualEnvironmentButton() {
-    HelloAndroidXRTheme {
+    InstaXRTheme {
         SetVirtualEnvironmentButton {}
     }
 }
@@ -163,7 +163,7 @@ private fun PreviewSetVirtualEnvironmentButton() {
 @Preview
 @Composable
 private fun PreviewRequestHomeSpaceButton() {
-    HelloAndroidXRTheme {
+    InstaXRTheme {
         RequestHomeSpaceButton {}
     }
 }
@@ -171,7 +171,7 @@ private fun PreviewRequestHomeSpaceButton() {
 @Preview
 @Composable
 private fun PreviewRequestFullSpaceButton() {
-    HelloAndroidXRTheme {
+    InstaXRTheme {
         RequestFullSpaceButton {}
     }
 }
@@ -179,7 +179,7 @@ private fun PreviewRequestFullSpaceButton() {
 @Preview
 @Composable
 private fun PreviewSetPassthroughButton() {
-    HelloAndroidXRTheme {
+    InstaXRTheme {
         SetPassthroughButton {}
     }
 }
