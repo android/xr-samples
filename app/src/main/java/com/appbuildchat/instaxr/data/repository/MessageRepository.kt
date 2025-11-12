@@ -2,8 +2,10 @@ package com.appbuildchat.instaxr.data.repository
 
 import com.appbuildchat.instaxr.data.model.Chat
 import com.appbuildchat.instaxr.data.model.Message
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import javax.inject.Inject
 
 /**
  * Repository interface for Message and Chat data
@@ -17,10 +19,11 @@ interface MessageRepository {
 }
 
 /**
- * Default implementation of MessageRepository
- * TODO: Connect to actual data sources (Room database, API)
+ * Default implementation of MessageRepository with Firestore
  */
-class DefaultMessageRepository : MessageRepository {
+class DefaultMessageRepository @Inject constructor(
+    private val firestore: FirebaseFirestore
+) : MessageRepository {
 
     override fun getChats(): Flow<List<Chat>> {
         // TODO: Implement actual data fetching from local/remote sources

@@ -1,8 +1,10 @@
 package com.appbuildchat.instaxr.data.repository
 
 import com.appbuildchat.instaxr.data.model.Story
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import javax.inject.Inject
 
 /**
  * Repository interface for Story data
@@ -15,10 +17,11 @@ interface StoryRepository {
 }
 
 /**
- * Default implementation of StoryRepository
- * TODO: Connect to actual data sources (Room database, API)
+ * Default implementation of StoryRepository with Firestore
  */
-class DefaultStoryRepository : StoryRepository {
+class DefaultStoryRepository @Inject constructor(
+    private val firestore: FirebaseFirestore
+) : StoryRepository {
 
     override fun getStories(): Flow<List<Story>> {
         // TODO: Implement actual data fetching from local/remote sources

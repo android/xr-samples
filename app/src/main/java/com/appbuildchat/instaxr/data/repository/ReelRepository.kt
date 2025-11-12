@@ -1,8 +1,10 @@
 package com.appbuildchat.instaxr.data.repository
 
 import com.appbuildchat.instaxr.data.model.Reel
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import javax.inject.Inject
 
 /**
  * Repository interface for Reel data
@@ -16,10 +18,11 @@ interface ReelRepository {
 }
 
 /**
- * Default implementation of ReelRepository
- * TODO: Connect to actual data sources (Room database, API)
+ * Default implementation of ReelRepository with Firestore
  */
-class DefaultReelRepository : ReelRepository {
+class DefaultReelRepository @Inject constructor(
+    private val firestore: FirebaseFirestore
+) : ReelRepository {
 
     override fun getReels(): Flow<List<Reel>> {
         // TODO: Implement actual data fetching from local/remote sources
