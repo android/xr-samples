@@ -1,0 +1,56 @@
+[
+  {
+    "id": "user_1",
+    "username": "sarah_travels",
+    "displayName": "Sarah Anderson",
+    "profileImage": "profile_1.jpg",
+    "bio": "Travel enthusiast | Adventure seeker | Photography lover",
+    "followers": 12500,
+    "following": 892
+  },
+  {
+    "id": "user_2",
+    "username": "alex_foodie",
+    "displayName": "Alex Chen",
+    "profileImage": "profile_2.jpg",
+    "bio": "Food blogger | Chef | Culinary adventures worldwide",
+    "followers": 8900,
+    "following": 456
+  },
+  {
+    "id": "user_3",
+    "username": "emma_creative",
+    "displayName": "Emma Williams",
+    "profileImage": "profile_3.jpg",
+    "bio": "Artist | Designer | Creative soul",
+    "followers": 15200,
+    "following": 678
+  },
+  {
+    "id": "user_4",
+    "username": "mike_fitness",
+    "displayName": "Mike Johnson",
+    "profileImage": "profile_4.jpg",
+    "bio": "Fitness coach | Marathon runner | Healthy lifestyle advocate",
+    "followers": 22100,
+    "following": 534
+  },
+  {
+    "id": "user_6",
+    "username": "sophie_nature",
+    "displayName": "Sophie Martinez",
+    "profileImage": "profile_6.jpg",
+    "bio": "Nature lover | Wildlife photographer | Conservation advocate",
+    "followers": 18700,
+    "following": 723
+  },
+  {
+    "id": "user_7",
+    "username": "david_tech",
+    "displayName": "David Lee",
+    "profileImage": "profile_7.jpg",
+    "bio": "Tech enthusiast | Developer | Innovation explorer",
+    "followers": 9800,
+    "following": 412
+  }
+]

@@ -7,8 +7,11 @@
       "Bash(./gradlew clean:*)",
       "Bash(./gradlew assembleDebug:*)",
       "Bash(./gradlew:*)",
-      "Bash(tree:*)",
-      "Bash(~/Library/Android/sdk/platform-tools/adb logcat -c)"
+      "Bash(adb logcat:*)",
+      "Bash(adb install:*)",
+      "Bash(adb shell am start:*)",
+      "Bash(adb shell am:*)",
+      "Bash(adb shell:*)"
     ],
     "deny": [],
     "ask": []

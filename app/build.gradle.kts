@@ -21,6 +21,7 @@ plugins {
     id("com.google.devtools.ksp")
     alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
+    kotlin("plugin.serialization") version "2.1.0"
 }
 
 android {
@@ -97,4 +98,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+
+    // Kotlinx Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+
+    // Coil for image loading
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
 }
