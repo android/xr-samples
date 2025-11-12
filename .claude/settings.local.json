@@ -11,7 +11,8 @@
       "Bash(adb install:*)",
       "Bash(adb shell am start:*)",
       "Bash(adb shell am:*)",
-      "Bash(adb shell:*)"
+      "Bash(adb shell:*)",
+      "Bash(adb:*)"
     ],
     "deny": [],
     "ask": []
