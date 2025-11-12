@@ -1,0 +1,102 @@
+[
+  {
+    "id": "post_1",
+    "userId": "user_1",
+    "imageUrl": "post_1.jpg",
+    "description": "Golden hour magic at the beach 🌅 There's something peaceful about watching the waves as the sun sets. Perfect end to a beautiful day!",
+    "likes": 2847,
+    "comments": 156,
+    "timestamp": "2024-01-15T18:30:00Z",
+    "location": "Malibu Beach, CA"
+  },
+  {
+    "id": "post_2",
+    "userId": "user_2",
+    "imageUrl": "post_2.jpg",
+    "description": "Fresh autumn vibes 🍂 Love this season for its cozy sweaters and warm color palettes. What's your favorite fall activity?",
+    "likes": 1923,
+    "comments": 89,
+    "timestamp": "2024-01-14T14:20:00Z",
+    "location": "Central Park, NYC"
+  },
+  {
+    "id": "post_3",
+    "userId": "user_3",
+    "imageUrl": "post_3.jpg",
+    "description": "City lights and late nights ✨ The urban landscape never fails to inspire. Found this amazing rooftop view downtown!",
+    "likes": 3456,
+    "comments": 234,
+    "timestamp": "2024-01-13T22:15:00Z",
+    "location": "Downtown LA"
+  },
+  {
+    "id": "post_4",
+    "userId": "user_4",
+    "imageUrl": "post_4.jpg",
+    "description": "Morning workout complete! 💪 Nothing beats that post-exercise energy. Remember: progress over perfection!",
+    "likes": 4123,
+    "comments": 312,
+    "timestamp": "2024-01-13T07:45:00Z",
+    "location": "Venice Beach Gym"
+  },
+  {
+    "id": "post_5",
+    "userId": "user_6",
+    "imageUrl": "post_5.jpg",
+    "description": "Into the wild 🌲 Hiking through ancient forests reminds me why we need to protect our natural world. Every tree tells a story.",
+    "likes": 2765,
+    "comments": 178,
+    "timestamp": "2024-01-12T11:30:00Z",
+    "location": "Redwood National Park"
+  },
+  {
+    "id": "post_6",
+    "userId": "user_7",
+    "imageUrl": "post_6.jpg",
+    "description": "Coffee and code ☕️ Working on something exciting today. The best ideas come when you're caffeinated and focused!",
+    "likes": 1834,
+    "comments": 92,
+    "timestamp": "2024-01-12T09:00:00Z",
+    "location": "Silicon Valley"
+  },
+  {
+    "id": "post_7",
+    "userId": "user_1",
+    "imageUrl": "post_7.jpg",
+    "description": "Mountain peaks calling 🏔️ The view from up here is absolutely breathtaking. Worth every step of the climb!",
+    "likes": 5234,
+    "comments": 428,
+    "timestamp": "2024-01-11T16:20:00Z",
+    "location": "Rocky Mountains, CO"
+  },
+  {
+    "id": "post_8",
+    "userId": "user_2",
+    "imageUrl": "post_8.jpg",
+    "description": "Homemade pasta night 🍝 Nothing beats fresh handmade pasta with garden tomatoes. Recipe coming soon to the blog!",
+    "likes": 3678,
+    "comments": 267,
+    "timestamp": "2024-01-11T19:30:00Z",
+    "location": "Home Kitchen"
+  },
+  {
+    "id": "post_9",
+    "userId": "user_3",
+    "imageUrl": "post_9.jpg",
+    "description": "Art in progress 🎨 Sometimes the creative process is messy, but that's where the magic happens. What are you creating today?",
+    "likes": 2145,
+    "comments": 134,
+    "timestamp": "2024-01-10T15:45:00Z",
+    "location": "Art Studio, Brooklyn"
+  },
+  {
+    "id": "post_10",
+    "userId": "user_6",
+    "imageUrl": "post_10.jpg",
+    "description": "Sunset safari 🦁 Witnessed the most incredible wildlife today. Nature's beauty never ceases to amaze me!",
+    "likes": 6789,
+    "comments": 523,
+    "timestamp": "2024-01-10T18:00:00Z",
+    "location": "Serengeti National Park"
+  }
+]
