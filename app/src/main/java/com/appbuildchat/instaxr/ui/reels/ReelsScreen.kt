@@ -26,6 +26,7 @@ import androidx.xr.compose.subspace.SpatialPanel
 import androidx.xr.compose.subspace.SpatialRow
 import androidx.xr.compose.subspace.layout.SubspaceModifier
 import androidx.xr.compose.subspace.layout.height
+import androidx.xr.compose.subspace.layout.offset
 import androidx.xr.compose.subspace.layout.width
 import com.appbuildchat.instaxr.ui.reels.components.ReelInfoPanel
 import com.appbuildchat.instaxr.ui.reels.components.ReelVideoPanel
@@ -172,7 +173,7 @@ fun ReelsSpatialContent(
                 }
             }
         } else {
-            // Main content - Two floating spatial panels
+            // Main content - Two floating spatial panels with spacing
             SpatialRow {
                 // Main Panel (Center) - Video Player
                 // This is the primary focus, displaying only the video
@@ -201,10 +202,12 @@ fun ReelsSpatialContent(
                 // 1. Reel info (author, date, description)
                 // 2. Comments section (scrollable list)
                 // 3. Action buttons (Like, Share, More)
+                // Offset adds spacing and slight angle for better viewing
                 SpatialPanel(
                     modifier = SubspaceModifier
                         .width(450.dp)
-                        .height(1000.dp),
+                        .height(1000.dp)
+                        .offset(x = 50.dp, y = 0.dp, z = -30.dp),
                     dragPolicy = MovePolicy(isEnabled = true),
                     resizePolicy = ResizePolicy(isEnabled = false)
                 ) {
