@@ -143,6 +143,7 @@ class ReelsViewModel : ViewModel() {
                 comments = listOf(
                     Comment(
                         id = "comment_1",
+                        postId = "reel_1",
                         userId = "user_2",
                         username = "john_smith",
                         text = "Amazing view!",
@@ -151,6 +152,7 @@ class ReelsViewModel : ViewModel() {
                     ),
                     Comment(
                         id = "comment_2",
+                        postId = "reel_1",
                         userId = "user_3",
                         username = "sarah_wilson",
                         text = "Where is this place?",
@@ -159,6 +161,7 @@ class ReelsViewModel : ViewModel() {
                     ),
                     Comment(
                         id = "comment_3",
+                        postId = "reel_1",
                         userId = "user_4",
                         username = "mike_jones",
                         text = "Absolutely stunning! I need to visit this place",
@@ -184,6 +187,7 @@ class ReelsViewModel : ViewModel() {
                 comments = listOf(
                     Comment(
                         id = "comment_4",
+                        postId = "reel_2",
                         userId = "user_6",
                         username = "food_lover_99",
                         text = "This looks delicious! Can you share the recipe?",
@@ -192,6 +196,7 @@ class ReelsViewModel : ViewModel() {
                     ),
                     Comment(
                         id = "comment_5",
+                        postId = "reel_2",
                         userId = "user_7",
                         username = "italian_nonna",
                         text = "Perfect technique! Just like my grandmother used to make",
@@ -217,6 +222,7 @@ class ReelsViewModel : ViewModel() {
                 comments = listOf(
                     Comment(
                         id = "comment_6",
+                        postId = "reel_3",
                         userId = "user_9",
                         username = "morning_runner",
                         text = "Great routine! Doing this every day now",
@@ -225,6 +231,7 @@ class ReelsViewModel : ViewModel() {
                     ),
                     Comment(
                         id = "comment_7",
+                        postId = "reel_3",
                         userId = "user_10",
                         username = "gym_enthusiast",
                         text = "How many reps do you recommend?",
@@ -233,6 +240,7 @@ class ReelsViewModel : ViewModel() {
                     ),
                     Comment(
                         id = "comment_8",
+                        postId = "reel_3",
                         userId = "user_8",
                         username = "fitness_coach_alex",
                         text = "@gym_enthusiast Start with 10-15 reps, 3 sets!",

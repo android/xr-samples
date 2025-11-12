@@ -11,7 +11,10 @@
       "Bash(adb install:*)",
       "Bash(adb shell am start:*)",
       "Bash(adb shell am:*)",
-      "Bash(adb shell:*)"
+      "Bash(adb shell:*)",
+      "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb devices)",
+      "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb install:*)",
+      "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb shell am start:*)"
     ],
     "deny": [],
     "ask": []
