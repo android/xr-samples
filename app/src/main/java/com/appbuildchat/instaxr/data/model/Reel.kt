@@ -16,5 +16,6 @@ data class Reel(
     val viewCount: Int = 0,
     val isLiked: Boolean = false,
     val isSaved: Boolean = false,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val comments: List<Comment> = emptyList()
 )

@@ -124,6 +124,9 @@ fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit) {
                     NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
                         navController.navigateSingleTopTo(AppRoutes.HOME)
                     }
+                    NavigationItem(Icons.Default.PlayArrow, "Reels", currentRoute == AppRoutes.REELS) {
+                        navController.navigateSingleTopTo(AppRoutes.REELS)
+                    }
                     NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
                         navController.navigateSingleTopTo(AppRoutes.SEARCH)
                     }
@@ -186,6 +189,9 @@ fun My2DContent(onRequestFullSpaceMode: () -> Unit) {
                 ) {
                     NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
                         navController.navigateSingleTopTo(AppRoutes.HOME)
+                    }
+                    NavigationItem(Icons.Default.PlayArrow, "Reels", currentRoute == AppRoutes.REELS) {
+                        navController.navigateSingleTopTo(AppRoutes.REELS)
                     }
                     NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
                         navController.navigateSingleTopTo(AppRoutes.SEARCH)
