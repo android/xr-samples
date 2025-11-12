@@ -1,6 +1,5 @@
 package com.appbuildchat.instaxr.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,49 +9,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.xr.compose.platform.LocalSpatialCapabilities
-import androidx.xr.compose.spatial.Subspace
-import androidx.xr.compose.subspace.SpatialPanel
-import androidx.xr.compose.subspace.MovePolicy
-import androidx.xr.compose.subspace.ResizePolicy
-import androidx.xr.compose.subspace.layout.SubspaceModifier
-import androidx.xr.compose.subspace.layout.width
-import androidx.xr.compose.subspace.layout.height
 
 @Composable
 fun EditProfileScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isSpatialUiEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
-
-    if (isSpatialUiEnabled) {
-        Subspace {
-            SpatialPanel(
-                modifier = SubspaceModifier
-                    .width(680.dp)
-                    .height(800.dp),
-                dragPolicy = MovePolicy(isEnabled = true),
-                resizePolicy = ResizePolicy(isEnabled = true)
-            ) {
-                Surface {
-                    EditProfileContent(
-                        onNavigateBack = onNavigateBack,
-                        modifier = modifier
-                    )
-                }
-            }
-        }
-    } else {
-        EditProfileContent(
-            onNavigateBack = onNavigateBack,
-            modifier = modifier
-        )
-    }
+    EditProfileContent(
+        onNavigateBack = onNavigateBack,
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,35 +35,35 @@ private fun EditProfileContent(
     var website by remember { mutableStateOf("") }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
         TopAppBar(
-            title = {
-                Text(
-                    "프로필 편집",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
+            title = {},
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로가기",
-                        tint = Color.White
+                        contentDescription = "뒤로가기"
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Black
-            )
+            actions = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "프로필 편집",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.width(48.dp))
+            }
         )
 
-        HorizontalDivider(color = Color(0xFF333333), thickness = 0.5.dp)
+        HorizontalDivider()
 
         // Content
         Column(
@@ -112,12 +81,12 @@ private fun EditProfileContent(
                 Surface(
                     modifier = Modifier.size(100.dp),
                     shape = MaterialTheme.shapes.extraLarge,
-                    color = Color(0xFF333333)
+                    color = MaterialTheme.colorScheme.outline
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = "사",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -129,7 +98,7 @@ private fun EditProfileContent(
                 TextButton(onClick = { /* TODO */ }) {
                     Text(
                         "사진 변경",
-                        color = Color(0xFF0095F6),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -140,7 +109,7 @@ private fun EditProfileContent(
             Column {
                 Text(
                     text = "이름",
-                    color = Color.White.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -150,11 +119,11 @@ private fun EditProfileContent(
                     onValueChange = { name = it },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFF0095F6),
-                        unfocusedBorderColor = Color(0xFF333333),
-                        cursorColor = Color.White
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }
@@ -163,7 +132,7 @@ private fun EditProfileContent(
             Column {
                 Text(
                     text = "소개",
-                    color = Color.White.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -175,11 +144,11 @@ private fun EditProfileContent(
                         .fillMaxWidth()
                         .height(120.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFF0095F6),
-                        unfocusedBorderColor = Color(0xFF333333),
-                        cursorColor = Color.White
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.onSurface
                     ),
                     maxLines = 4
                 )
@@ -189,7 +158,7 @@ private fun EditProfileContent(
             Column {
                 Text(
                     text = "웹사이트",
-                    color = Color.White.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -201,15 +170,15 @@ private fun EditProfileContent(
                     placeholder = {
                         Text(
                             "https://",
-                            color = Color.White.copy(alpha = 0.4f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                         )
                     },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color(0xFF0095F6),
-                        unfocusedBorderColor = Color(0xFF333333),
-                        cursorColor = Color.White
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }
@@ -221,12 +190,12 @@ private fun EditProfileContent(
                     .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0095F6)
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Text(
                     "저장",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )

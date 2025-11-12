@@ -1,33 +1,22 @@
 package com.appbuildchat.instaxr.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.xr.compose.platform.LocalSpatialCapabilities
-import androidx.xr.compose.spatial.Subspace
-import androidx.xr.compose.subspace.SpatialPanel
-import androidx.xr.compose.subspace.MovePolicy
-import androidx.xr.compose.subspace.ResizePolicy
-import androidx.xr.compose.subspace.layout.SubspaceModifier
-import androidx.xr.compose.subspace.layout.width
-import androidx.xr.compose.subspace.layout.height
+import androidx.hilt.navigation.compose.hiltViewModel
 
 /**
  * Data model for settings items
@@ -45,7 +34,9 @@ data class SettingsItem(
     val icon: ImageVector,
     val type: SettingsItemType,
     val isToggled: Boolean = false,
-    val isDestructive: Boolean = false
+    val isDestructive: Boolean = false,
+    val isPrimary: Boolean = false,
+    val showIcon: Boolean = true
 )
 
 data class SettingsSection(
@@ -60,40 +51,16 @@ data class SettingsSection(
 fun SettingsScreen(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = viewModel()
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isSpatialUiEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
 
-    if (isSpatialUiEnabled) {
-        // XR Mode - Spatial Panel
-        Subspace {
-            SpatialPanel(
-                modifier = SubspaceModifier
-                    .width(680.dp)
-                    .height(800.dp),
-                dragPolicy = MovePolicy(isEnabled = true),
-                resizePolicy = ResizePolicy(isEnabled = true)
-            ) {
-                Surface {
-                    SettingsContent(
-                        uiState = uiState,
-                        onAction = viewModel::handleAction,
-                        onNavigate = onNavigate,
-                        modifier = modifier
-                    )
-                }
-            }
-        }
-    } else {
-        // 2D Mode
-        SettingsContent(
-            uiState = uiState,
-            onAction = viewModel::handleAction,
-            onNavigate = onNavigate,
-            modifier = modifier
-        )
-    }
+    SettingsContent(
+        uiState = uiState,
+        onAction = viewModel::handleAction,
+        onNavigate = onNavigate,
+        modifier = modifier
+    )
 }
 
 /**
@@ -109,15 +76,12 @@ internal fun SettingsContent(
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = modifier.fillMaxSize()
     ) {
         when (uiState) {
             is SettingsUiState.Loading -> {
                 CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.White
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
             is SettingsUiState.Success -> {
@@ -127,17 +91,32 @@ internal fun SettingsContent(
                 ) {
                     // Header
                     item {
-                        Text(
-                            text = "설정",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "설정 및 활동",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
 
                     // Settings Sections
-                    uiState.sections.forEach { section ->
+                    uiState.sections.forEachIndexed { index, section ->
+                        // Add thick divider before each section (except first)
+                        if (index > 0) {
+                            item {
+                                HorizontalDivider(
+                                    thickness = 8.dp,
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            }
+                        }
+
                         item {
                             SettingSectionHeader(section.header)
                         }
@@ -173,10 +152,6 @@ internal fun SettingsContent(
                                 }
                             }
                         }
-
-                        item {
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
                     }
                 }
             }
@@ -187,14 +162,13 @@ internal fun SettingsContent(
                 ) {
                     Text(
                         text = "오류가 발생했습니다",
-                        color = Color.White,
                         fontSize = 18.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = uiState.message,
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -206,16 +180,10 @@ internal fun SettingsContent(
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
             title = {
-                Text(
-                    "로그아웃",
-                    color = Color.White
-                )
+                Text("로그아웃")
             },
             text = {
-                Text(
-                    "정말 로그아웃 하시겠습니까?",
-                    color = Color.White.copy(alpha = 0.9f)
-                )
+                Text("정말 로그아웃 하시겠습니까?")
             },
             confirmButton = {
                 TextButton(
@@ -224,15 +192,14 @@ internal fun SettingsContent(
                         showLogoutDialog = false
                     }
                 ) {
-                    Text("로그아웃", color = Color.Red)
+                    Text("로그아웃", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("취소", color = Color.White)
+                    Text("취소")
                 }
-            },
-            containerColor = Color(0xFF1C1C1C)
+            }
         )
     }
 }
@@ -246,7 +213,7 @@ private fun SettingSectionHeader(title: String) {
         text = title,
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
-        color = Color.White.copy(alpha = 0.6f),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
     )
 }
@@ -263,8 +230,7 @@ private fun SettingNavigationItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .clickable(onClick = onClick),
-        color = Color.Black
+            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
@@ -272,45 +238,53 @@ private fun SettingNavigationItem(
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
+            if (item.showIcon) {
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = null,
+                    tint = when {
+                        item.isPrimary -> MaterialTheme.colorScheme.primary
+                        item.isDestructive -> MaterialTheme.colorScheme.error
+                        else -> MaterialTheme.colorScheme.onSurface
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
 
-            Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+            }
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.title,
                     fontSize = 16.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    color = when {
+                        item.isPrimary -> MaterialTheme.colorScheme.primary
+                        item.isDestructive -> MaterialTheme.colorScheme.error
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
                 )
                 item.subtitle?.let { subtitle ->
                     Text(
                         text = subtitle,
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "이동",
-                tint = Color.White.copy(alpha = 0.4f),
+                tint = when {
+                    item.isPrimary -> MaterialTheme.colorScheme.primary
+                    item.isDestructive -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
                 modifier = Modifier.size(20.dp)
             )
         }
     }
-
-    HorizontalDivider(
-        color = Color(0xFF333333),
-        thickness = 0.5.dp,
-        modifier = Modifier.padding(horizontal = 20.dp)
-    )
 }
 
 /**
@@ -326,8 +300,7 @@ private fun SettingToggleItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
-        color = Color.Black
+            .height(56.dp)
     ) {
         Row(
             modifier = Modifier
@@ -338,7 +311,6 @@ private fun SettingToggleItem(
             Icon(
                 imageVector = item.icon,
                 contentDescription = null,
-                tint = Color.White,
                 modifier = Modifier.size(24.dp)
             )
 
@@ -348,14 +320,13 @@ private fun SettingToggleItem(
                 Text(
                     text = item.title,
                     fontSize = 16.sp,
-                    color = Color.White,
                     fontWeight = FontWeight.Normal
                 )
                 item.subtitle?.let { subtitle ->
                     Text(
                         text = subtitle,
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -365,22 +336,10 @@ private fun SettingToggleItem(
                 onCheckedChange = {
                     isChecked = it
                     onToggle(it)
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = Color(0xFF0095F6),
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = Color(0xFF333333)
-                )
+                }
             )
         }
     }
-
-    HorizontalDivider(
-        color = Color(0xFF333333),
-        thickness = 0.5.dp,
-        modifier = Modifier.padding(horizontal = 20.dp)
-    )
 }
 
 /**
@@ -395,8 +354,7 @@ private fun SettingActionItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .clickable(onClick = onClick),
-        color = Color.Black
+            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
@@ -404,29 +362,33 @@ private fun SettingActionItem(
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = null,
-                tint = if (item.isDestructive) Color.Red else Color.White,
-                modifier = Modifier.size(24.dp)
-            )
+            if (item.showIcon) {
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = null,
+                    tint = when {
+                        item.isPrimary -> MaterialTheme.colorScheme.primary
+                        item.isDestructive -> MaterialTheme.colorScheme.error
+                        else -> MaterialTheme.colorScheme.onSurface
+                    },
+                    modifier = Modifier.size(24.dp)
+                )
 
-            Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+            }
 
             Text(
                 text = item.title,
                 fontSize = 16.sp,
-                color = if (item.isDestructive) Color.Red else Color.White,
+                color = when {
+                    item.isPrimary -> MaterialTheme.colorScheme.primary
+                    item.isDestructive -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.onSurface
+                },
                 fontWeight = FontWeight.Normal
             )
         }
     }
-
-    HorizontalDivider(
-        color = Color(0xFF333333),
-        thickness = 0.5.dp,
-        modifier = Modifier.padding(horizontal = 20.dp)
-    )
 }
 
 /**

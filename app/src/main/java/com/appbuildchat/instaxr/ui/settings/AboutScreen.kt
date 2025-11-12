@@ -1,6 +1,5 @@
 package com.appbuildchat.instaxr.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,50 +9,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.xr.compose.platform.LocalSpatialCapabilities
-import androidx.xr.compose.spatial.Subspace
-import androidx.xr.compose.subspace.SpatialPanel
-import androidx.xr.compose.subspace.MovePolicy
-import androidx.xr.compose.subspace.ResizePolicy
-import androidx.xr.compose.subspace.layout.SubspaceModifier
-import androidx.xr.compose.subspace.layout.width
-import androidx.xr.compose.subspace.layout.height
 
 @Composable
 fun AboutScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isSpatialUiEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
-
-    if (isSpatialUiEnabled) {
-        Subspace {
-            SpatialPanel(
-                modifier = SubspaceModifier
-                    .width(680.dp)
-                    .height(800.dp),
-                dragPolicy = MovePolicy(isEnabled = true),
-                resizePolicy = ResizePolicy(isEnabled = true)
-            ) {
-                Surface {
-                    AboutContent(
-                        onNavigateBack = onNavigateBack,
-                        modifier = modifier
-                    )
-                }
-            }
-        }
-    } else {
-        AboutContent(
-            onNavigateBack = onNavigateBack,
-            modifier = modifier
-        )
-    }
+    AboutContent(
+        onNavigateBack = onNavigateBack,
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,35 +32,35 @@ private fun AboutContent(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
         TopAppBar(
-            title = {
-                Text(
-                    "InstaXR 정보",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
+            title = {},
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로가기",
-                        tint = Color.White
+                        contentDescription = "뒤로가기"
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Black
-            )
+            actions = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "InstaXR 정보",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.width(48.dp))
+            }
         )
 
-        HorizontalDivider(color = Color(0xFF333333), thickness = 0.5.dp)
+        HorizontalDivider()
 
         // Content
         Column(
@@ -108,12 +77,12 @@ private fun AboutContent(
             Surface(
                 modifier = Modifier.size(120.dp),
                 shape = MaterialTheme.shapes.large,
-                color = Color(0xFF0095F6)
+                color = MaterialTheme.colorScheme.primary
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         text = "XR",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -125,14 +94,14 @@ private fun AboutContent(
                 text = "InstaXR",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             // Version
             Text(
                 text = "버전 1.0.0",
                 fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -141,7 +110,7 @@ private fun AboutContent(
             Text(
                 text = "InstaXR은 확장 현실(XR) 기술을 활용한\n차세대 소셜 미디어 플랫폼입니다.\n\n공간 UI와 몰입형 환경에서\n새로운 방식으로 소통하고 공유하세요.",
                 fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center,
                 lineHeight = 24.sp
             )
@@ -152,13 +121,13 @@ private fun AboutContent(
             Text(
                 text = "© 2025 InstaXR\nAll rights reserved.",
                 fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 textAlign = TextAlign.Center
             )
 
             // Additional Info
             Divider(
-                color = Color(0xFF333333),
+                color = MaterialTheme.colorScheme.outline,
                 thickness = 1.dp,
                 modifier = Modifier.padding(vertical = 20.dp)
             )
@@ -185,12 +154,12 @@ private fun InfoRow(label: String, value: String) {
         Text(
             text = label,
             fontSize = 14.sp,
-            color = Color.White.copy(alpha = 0.6f)
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
         Text(
             text = value,
             fontSize = 14.sp,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Medium
         )
     }

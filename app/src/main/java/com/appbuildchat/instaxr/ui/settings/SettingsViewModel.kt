@@ -1,6 +1,7 @@
 package com.appbuildchat.instaxr.ui.settings
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -141,6 +142,47 @@ class SettingsViewModel : ViewModel() {
                     )
                 )
             ),
+            // Content Visibility Section
+            SettingsSection(
+                header = "내 콘텐츠를 볼 수 있는 사람",
+                items = listOf(
+                    SettingsItem(
+                        id = "account_privacy",
+                        title = "계정 공개 범위",
+                        subtitle = "내 계정을 볼 수 있는 사람 관리",
+                        icon = Icons.Default.Lock,
+                        type = SettingsItemType.Navigation
+                    ),
+                    SettingsItem(
+                        id = "close_friends",
+                        title = "친한 친구",
+                        subtitle = "특별한 스토리를 공유할 사람 목록",
+                        icon = Icons.Default.Star,
+                        type = SettingsItemType.Navigation
+                    ),
+                    SettingsItem(
+                        id = "crossposting",
+                        title = "교차 게시",
+                        subtitle = "다른 플랫폼에 자동 게시",
+                        icon = Icons.Default.Share,
+                        type = SettingsItemType.Navigation
+                    ),
+                    SettingsItem(
+                        id = "blocked_accounts",
+                        title = "차단된 계정",
+                        subtitle = "차단한 계정 관리",
+                        icon = Icons.Default.Clear,
+                        type = SettingsItemType.Navigation
+                    ),
+                    SettingsItem(
+                        id = "story_location",
+                        title = "스토리 및 위치",
+                        subtitle = "위치 정보 공유 설정",
+                        icon = Icons.Default.LocationOn,
+                        type = SettingsItemType.Navigation
+                    )
+                )
+            ),
             // About & Support Section
             SettingsSection(
                 header = "정보 및 지원",
@@ -178,11 +220,27 @@ class SettingsViewModel : ViewModel() {
                 header = "계정 관리",
                 items = listOf(
                     SettingsItem(
+                        id = "login",
+                        title = "로그인",
+                        icon = Icons.Default.AccountCircle,
+                        type = SettingsItemType.Navigation,
+                        showIcon = false
+                    ),
+                    SettingsItem(
+                        id = "add_account",
+                        title = "계정 추가",
+                        icon = Icons.Default.Add,
+                        type = SettingsItemType.Navigation,
+                        isPrimary = true,
+                        showIcon = false
+                    ),
+                    SettingsItem(
                         id = "logout",
                         title = "로그아웃",
-                        icon = Icons.Default.ExitToApp,
+                        icon = Icons.AutoMirrored.Filled.ExitToApp,
                         type = SettingsItemType.Action,
-                        isDestructive = true
+                        isDestructive = true,
+                        showIcon = false
                     )
                 )
             )

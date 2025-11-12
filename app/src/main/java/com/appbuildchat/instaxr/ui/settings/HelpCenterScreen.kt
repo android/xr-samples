@@ -1,6 +1,5 @@
 package com.appbuildchat.instaxr.ui.settings
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,18 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.xr.compose.platform.LocalSpatialCapabilities
-import androidx.xr.compose.spatial.Subspace
-import androidx.xr.compose.subspace.SpatialPanel
-import androidx.xr.compose.subspace.MovePolicy
-import androidx.xr.compose.subspace.ResizePolicy
-import androidx.xr.compose.subspace.layout.SubspaceModifier
-import androidx.xr.compose.subspace.layout.width
-import androidx.xr.compose.subspace.layout.height
 
 data class HelpTopic(
     val title: String,
@@ -36,31 +26,10 @@ fun HelpCenterScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isSpatialUiEnabled = LocalSpatialCapabilities.current.isSpatialUiEnabled
-
-    if (isSpatialUiEnabled) {
-        Subspace {
-            SpatialPanel(
-                modifier = SubspaceModifier
-                    .width(680.dp)
-                    .height(800.dp),
-                dragPolicy = MovePolicy(isEnabled = true),
-                resizePolicy = ResizePolicy(isEnabled = true)
-            ) {
-                Surface {
-                    HelpCenterContent(
-                        onNavigateBack = onNavigateBack,
-                        modifier = modifier
-                    )
-                }
-            }
-        }
-    } else {
-        HelpCenterContent(
-            onNavigateBack = onNavigateBack,
-            modifier = modifier
-        )
-    }
+    HelpCenterContent(
+        onNavigateBack = onNavigateBack,
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,35 +76,35 @@ private fun HelpCenterContent(
     }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = modifier.fillMaxSize()
     ) {
         // Top App Bar
         TopAppBar(
-            title = {
-                Text(
-                    "고객센터",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
+            title = {},
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로가기",
-                        tint = Color.White
+                        contentDescription = "뒤로가기"
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Black
-            )
+            actions = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "고객센터",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.width(48.dp))
+            }
         )
 
-        HorizontalDivider(color = Color(0xFF333333), thickness = 0.5.dp)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 0.5.dp)
 
         // Content
         LazyColumn(
@@ -155,7 +124,7 @@ private fun HelpTopicItem(topic: HelpTopic) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { /* TODO: Navigate to detail */ },
-        color = Color.Black
+        color = MaterialTheme.colorScheme.surface
     ) {
         Row(
             modifier = Modifier
@@ -167,28 +136,28 @@ private fun HelpTopicItem(topic: HelpTopic) {
                 Text(
                     text = topic.title,
                     fontSize = 16.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = topic.description,
                     fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
 
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "자세히 보기",
-                tint = Color.White.copy(alpha = 0.4f),
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                 modifier = Modifier.size(20.dp)
             )
         }
     }
 
     HorizontalDivider(
-        color = Color(0xFF333333),
+        color = MaterialTheme.colorScheme.outline,
         thickness = 0.5.dp,
         modifier = Modifier.padding(horizontal = 20.dp)
     )
