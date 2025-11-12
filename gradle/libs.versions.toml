@@ -1,6 +1,6 @@
 [versions]
 androidx-runtime = "1.9.2"
-agp = "8.13.0"
+agp = "8.7.3"
 arcore = "1.0.0-alpha06"
 compose = "1.0.0-alpha07"
 extensionsXr = "1.1.0"

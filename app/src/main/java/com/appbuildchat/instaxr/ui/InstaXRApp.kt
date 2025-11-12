@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -75,7 +76,7 @@ fun InstaXRApp() {
 
 /**
  * Spatial content for XR mode
- * Observes HomeViewModel (activity-scoped via Hilt) to switch layouts
+ * Observes HomeViewModel and ProfileViewModel (activity-scoped via Hilt) to switch layouts
  */
 @SuppressLint("RestrictedApi")
 @Composable
@@ -87,8 +88,9 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context as? androidx.activity.ComponentActivity
 
-    // Check if we're on home route
+    // Check routes
     val isHomeRoute = currentRoute == AppRoutes.HOME
+    val isProfileRoute = currentRoute == AppRoutes.MY_PAGE
 
     // Get activity-scoped HomeViewModel (same instance as HomeScreen uses)
     val homeViewModel: com.appbuildchat.instaxr.ui.home.HomeViewModel? =
@@ -96,15 +98,28 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
             androidx.hilt.navigation.compose.hiltViewModel(viewModelStoreOwner = activity)
         } else null
 
+    // Get ProfileViewModel for profile screen
+    val profileViewModel: com.appbuildchat.instaxr.ui.profile.ProfileViewModel? =
+        if (isProfileRoute && activity != null) {
+            androidx.lifecycle.viewmodel.compose.viewModel()
+        } else null
+
     val homeUiState = homeViewModel?.uiState?.collectAsState()?.value
     val hasSelectedPost = (homeUiState as? com.appbuildchat.instaxr.ui.home.HomeUiState.Success)?.selectedPost != null
 
+    val profileUiState = profileViewModel?.uiState?.collectAsState()?.value
+    val hasSelectedProfilePost = (profileUiState as? com.appbuildchat.instaxr.ui.profile.ProfileUiState.Success)?.selectedPost != null
+
     // If on home with selected post, show three spatial panels
-    if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
+    if (isHomeRoute && hasSelectedPost) {
         // EXPANDED STATE: Three separate spatial panels
+        // Note: hasSelectedPost being true guarantees homeViewModel and homeUiState are non-null
+        val viewModel = homeViewModel!!
+        val uiState = homeUiState!!
+
         com.appbuildchat.instaxr.ui.home.HomeScreenSpatialPanelsAnimated(
-            uiState = homeUiState,
-            onAction = homeViewModel::handleAction
+            uiState = uiState,
+            onAction = viewModel::handleAction
         )
 
         // Still show navigation orbiter
@@ -125,26 +140,80 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     NavigationItem(Icons.Default.Home, "Home", true) {
-                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                     }
                     NavigationItem(Icons.Default.Search, "Search", false) {
-                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.SEARCH)
                     }
                     NavigationItem(Icons.Default.Add, "Add", false) {
-                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.ADD_POST)
                     }
                     NavigationItem(Icons.Default.Email, "Messages", false) {
-                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.MESSAGES)
                     }
                     NavigationItem(Icons.Default.Person, "My Page", false) {
-                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
                     }
                     NavigationItem(Icons.Default.Settings, "Settings", false) {
-                        homeViewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.home.HomeAction.DeselectPost)
+                        navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                    }
+                }
+            }
+        }
+    } else if (isProfileRoute && hasSelectedProfilePost) {
+        // EXPANDED STATE FOR PROFILE: Two spatial panels
+        // Note: hasSelectedProfilePost being true guarantees profileViewModel and profileUiState are non-null
+        val viewModel = profileViewModel!!
+        val uiState = profileUiState!!
+
+        com.appbuildchat.instaxr.ui.profile.ProfileScreenSpatialPanelsAnimated(
+            uiState = uiState,
+            onAction = viewModel::handleAction
+        )
+
+        // Still show navigation orbiter
+        Orbiter(
+            position = ContentEdge.Bottom,
+            offset = 100.dp,
+            alignment = Alignment.CenterHorizontally
+        ) {
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(28.dp)),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NavigationItem(Icons.Default.Home, "Home", false) {
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.profile.ProfileAction.DeselectPost)
+                        navController.navigateSingleTopTo(AppRoutes.HOME)
+                    }
+                    NavigationItem(Icons.Default.Search, "Search", false) {
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.profile.ProfileAction.DeselectPost)
+                        navController.navigateSingleTopTo(AppRoutes.SEARCH)
+                    }
+                    NavigationItem(Icons.Default.Add, "Add", false) {
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.profile.ProfileAction.DeselectPost)
+                        navController.navigateSingleTopTo(AppRoutes.ADD_POST)
+                    }
+                    NavigationItem(Icons.Default.Email, "Messages", false) {
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.profile.ProfileAction.DeselectPost)
+                        navController.navigateSingleTopTo(AppRoutes.MESSAGES)
+                    }
+                    NavigationItem(Icons.Default.Person, "My Page", true) {
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.profile.ProfileAction.DeselectPost)
+                    }
+                    NavigationItem(Icons.Default.Settings, "Settings", false) {
+                        viewModel.handleAction(com.appbuildchat.instaxr.ui.profile.ProfileAction.DeselectPost)
                         navController.navigateSingleTopTo(AppRoutes.SETTINGS)
                     }
                 }
@@ -349,7 +418,7 @@ fun HomeSpaceModeIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) 
 fun FullSpaceModeIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     FilledTonalIconButton(onClick = onClick, modifier = modifier) {
         Icon(
-            imageVector = Icons.Default.ArrowForward,
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = "Switch to Full Space Mode"
         )
     }
