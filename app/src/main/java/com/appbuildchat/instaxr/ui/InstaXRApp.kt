@@ -75,7 +75,7 @@ fun InstaXRApp() {
 
 /**
  * Spatial content for XR mode
- * Observes HomeViewModel to switch between normal navigation and expanded 3-panel layout
+ * Observes HomeViewModel (activity-scoped via Hilt) to switch layouts
  */
 @SuppressLint("RestrictedApi")
 @Composable
@@ -83,26 +83,24 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
+    // Get the activity to scope ViewModel to activity level
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val activity = context as? androidx.activity.ComponentActivity
+
     // Check if we're on home route
     val isHomeRoute = currentRoute == AppRoutes.HOME
 
-    // Get HomeViewModel from the nav back stack entry for the home route
-    // This ensures we get the SAME instance that HomeScreen is using
-    val homeBackStackEntry = navController.currentBackStackEntry
+    // Get activity-scoped HomeViewModel (same instance as HomeScreen uses)
     val homeViewModel: com.appbuildchat.instaxr.ui.home.HomeViewModel? =
-        if (isHomeRoute && homeBackStackEntry != null) {
-            androidx.lifecycle.viewmodel.compose.viewModel(viewModelStoreOwner = homeBackStackEntry)
+        if (isHomeRoute && activity != null) {
+            androidx.hilt.navigation.compose.hiltViewModel(viewModelStoreOwner = activity)
         } else null
 
     val homeUiState = homeViewModel?.uiState?.collectAsState()?.value
     val hasSelectedPost = (homeUiState as? com.appbuildchat.instaxr.ui.home.HomeUiState.Success)?.selectedPost != null
 
-    // DEBUG logging
-    android.util.Log.d("InstaXRApp", "isHomeRoute=$isHomeRoute, hasSelectedPost=$hasSelectedPost, homeViewModel=$homeViewModel, homeUiState=$homeUiState")
-
     // If on home with selected post, show three spatial panels
     if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
-        android.util.Log.d("InstaXRApp", "SHOWING 3 PANELS!!!")
         // EXPANDED STATE: Three separate spatial panels
         com.appbuildchat.instaxr.ui.home.HomeScreenSpatialPanelsAnimated(
             uiState = homeUiState,
@@ -155,66 +153,66 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     } else {
         // NORMAL STATE: Main spatial panel with navigation
         SpatialPanel(
-            modifier = SubspaceModifier
-                .width(680.dp)
-                .height(800.dp),
-            dragPolicy = MovePolicy(isEnabled = true),
-            resizePolicy = ResizePolicy(isEnabled = true)
+        modifier = SubspaceModifier
+            .width(680.dp)
+            .height(800.dp),
+        dragPolicy = MovePolicy(isEnabled = true),
+        resizePolicy = ResizePolicy(isEnabled = true)
+    ) {
+        Surface {
+            AppNavigation(navController = navController)
+        }
+
+        // Home Space Mode Button (Top Right)
+        Orbiter(
+            position = ContentEdge.Bottom,
+            offset = 20.dp,
+            alignment = Alignment.End
         ) {
-            Surface {
-                AppNavigation(navController = navController)
-            }
+            HomeSpaceModeIconButton(
+                onClick = onRequestHomeSpaceMode,
+                modifier = Modifier.size(56.dp)
+            )
+        }
 
-            // Home Space Mode Button (Top Right)
-            Orbiter(
-                position = ContentEdge.Bottom,
-                offset = 20.dp,
-                alignment = Alignment.End
+        // Bottom Navigation Orbiter
+        Orbiter(
+            position = ContentEdge.Bottom,
+            offset = 100.dp,
+            alignment = Alignment.CenterHorizontally
+        ) {
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(28.dp)),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
             ) {
-                HomeSpaceModeIconButton(
-                    onClick = onRequestHomeSpaceMode,
-                    modifier = Modifier.size(56.dp)
-                )
-            }
-
-            // Bottom Navigation Orbiter
-            Orbiter(
-                position = ContentEdge.Bottom,
-                offset = 100.dp,
-                alignment = Alignment.CenterHorizontally
-            ) {
-                Surface(
-                    modifier = Modifier.clip(RoundedCornerShape(28.dp)),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    tonalElevation = 3.dp,
-                    shadowElevation = 8.dp
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
-                            navController.navigateSingleTopTo(AppRoutes.HOME)
-                        }
-                        NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
-                            navController.navigateSingleTopTo(AppRoutes.SEARCH)
-                        }
-                        NavigationItem(Icons.Default.Add, "Add", currentRoute == AppRoutes.ADD_POST) {
-                            navController.navigateSingleTopTo(AppRoutes.ADD_POST)
-                        }
-                        NavigationItem(Icons.Default.Email, "Messages", currentRoute == AppRoutes.MESSAGES) {
-                            navController.navigateSingleTopTo(AppRoutes.MESSAGES)
-                        }
-                        NavigationItem(Icons.Default.Person, "My Page", currentRoute == AppRoutes.MY_PAGE) {
-                            navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
-                        }
-                        NavigationItem(Icons.Default.Settings, "Settings", currentRoute == AppRoutes.SETTINGS) {
-                            navController.navigateSingleTopTo(AppRoutes.SETTINGS)
-                        }
+                    NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
+                        navController.navigateSingleTopTo(AppRoutes.HOME)
+                    }
+                    NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
+                        navController.navigateSingleTopTo(AppRoutes.SEARCH)
+                    }
+                    NavigationItem(Icons.Default.Add, "Add", currentRoute == AppRoutes.ADD_POST) {
+                        navController.navigateSingleTopTo(AppRoutes.ADD_POST)
+                    }
+                    NavigationItem(Icons.Default.Email, "Messages", currentRoute == AppRoutes.MESSAGES) {
+                        navController.navigateSingleTopTo(AppRoutes.MESSAGES)
+                    }
+                    NavigationItem(Icons.Default.Person, "My Page", currentRoute == AppRoutes.MY_PAGE) {
+                        navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
+                    }
+                    NavigationItem(Icons.Default.Settings, "Settings", currentRoute == AppRoutes.SETTINGS) {
+                        navController.navigateSingleTopTo(AppRoutes.SETTINGS)
                     }
                 }
             }
+        }
         }
     }
 }

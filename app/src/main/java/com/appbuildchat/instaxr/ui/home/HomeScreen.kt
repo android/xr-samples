@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import com.appbuildchat.instaxr.ui.icons.CommentBubble
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.xr.compose.platform.LocalSpatialCapabilities
+import androidx.xr.compose.spatial.Orbiter
 import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.subspace.SpatialPanel
 import androidx.xr.compose.subspace.SpatialRow
@@ -46,19 +48,21 @@ import com.appbuildchat.instaxr.data.model.Post
 
 /**
  * Top-level composable for the Home feature screen
- * Creates separate UIs for XR spatial mode vs 2D mode
+ * Uses Hilt ViewModel scoped to Activity for sharing with InstaXRApp
  */
-@SuppressLint("RestrictedApi")
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel()
+    modifier: Modifier = Modifier
 ) {
+    // Get activity-scoped ViewModel (shared with InstaXRApp)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val activity = context as? androidx.activity.ComponentActivity
+    val viewModel: HomeViewModel = androidx.hilt.navigation.compose.hiltViewModel(
+        viewModelStoreOwner = activity ?: error("Activity required")
+    )
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // For now, always use 2D content in navigation context
-    // The Subspace approach doesn't work well when already inside a SpatialPanel
-    // TODO: Properly detect if we're in ApplicationSubspace vs nested SpatialPanel
     HomeContent(
         uiState = uiState,
         onAction = viewModel::handleAction,
@@ -282,6 +286,23 @@ fun HomeScreenSpatialPanelsAnimated(
                         onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
                         modifier = Modifier.fillMaxSize()
                     )
+                }
+
+                // Floating close button (Orbiter)
+                Orbiter(
+                    position = androidx.xr.compose.spatial.ContentEdge.Top,
+                    offset = 16.dp,
+                    alignment = androidx.compose.ui.Alignment.End
+                ) {
+                    FilledTonalIconButton(
+                        onClick = { onAction(HomeAction.DeselectPost) },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close expanded view"
+                        )
+                    }
                 }
             }
         }
@@ -699,7 +720,7 @@ private fun CompactPostItem(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .background(
-                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                if (isSelected) MaterialTheme.colorScheme.surfaceVariant
                 else MaterialTheme.colorScheme.surface
             )
             .padding(8.dp)
@@ -708,8 +729,10 @@ private fun CompactPostItem(
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(resourceId)
-                .size(400, 400) // Limit thumbnail size
+                .size(600) // Reasonable thumbnail size
                 .crossfade(true)
+                .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+                .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
                 .build(),
             contentDescription = "Post thumbnail",
             modifier = Modifier
@@ -784,27 +807,18 @@ private fun DescriptionAndCommentsPanel(
             .background(MaterialTheme.colorScheme.surface)
             .padding(16.dp)
     ) {
-        // Post header
-        PostHeader(
-            username = post.username,
-            profileImageUrl = post.userProfileImageUrl,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Caption/Description
+        // Caption/Description with username
         if (!post.caption.isNullOrBlank()) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = post.username,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = post.caption,
                     style = MaterialTheme.typography.bodyMedium,
