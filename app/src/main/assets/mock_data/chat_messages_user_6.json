@@ -1,0 +1,50 @@
+[
+  {
+    "id": "msg_6_1",
+    "chatId": "chat_5",
+    "senderId": "user_6",
+    "message": "You won't believe what I saw on my hike today!",
+    "timestamp": 1699459200000,
+    "isMe": false
+  },
+  {
+    "id": "msg_6_2",
+    "chatId": "chat_5",
+    "senderId": "me",
+    "message": "What did you see?!",
+    "timestamp": 1699459800000,
+    "isMe": true
+  },
+  {
+    "id": "msg_6_3",
+    "chatId": "chat_5",
+    "senderId": "user_6",
+    "message": "A family of deer! And the sunset was gorgeous",
+    "timestamp": 1699460400000,
+    "isMe": false
+  },
+  {
+    "id": "msg_6_4",
+    "chatId": "chat_5",
+    "senderId": "me",
+    "message": "That's amazing! Did you get photos?",
+    "timestamp": 1699461000000,
+    "isMe": true
+  },
+  {
+    "id": "msg_6_5",
+    "chatId": "chat_5",
+    "senderId": "user_6",
+    "message": "Of course! I'll send them to you",
+    "timestamp": 1699461600000,
+    "isMe": false
+  },
+  {
+    "id": "msg_6_6",
+    "chatId": "chat_5",
+    "senderId": "user_6",
+    "message": "I spotted a rare bird species today! Sending you the photos now",
+    "timestamp": 1699545600000,
+    "isMe": false
+  }
+]
