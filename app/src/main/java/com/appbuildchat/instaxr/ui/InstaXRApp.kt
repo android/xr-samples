@@ -87,8 +87,9 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context as? androidx.activity.ComponentActivity
 
-    // Check if we're on home route
+    // Check if we're on home or search route
     val isHomeRoute = currentRoute == AppRoutes.HOME
+    val isSearchRoute = currentRoute == AppRoutes.SEARCH
 
     // Get activity-scoped HomeViewModel (same instance as HomeScreen uses)
     val homeViewModel: com.appbuildchat.instaxr.ui.home.HomeViewModel? =
@@ -96,11 +97,63 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
             androidx.hilt.navigation.compose.hiltViewModel(viewModelStoreOwner = activity)
         } else null
 
+    // Get activity-scoped SearchViewModel (same instance as SearchScreen uses)
+    val searchViewModel: com.appbuildchat.instaxr.ui.search.SearchViewModel? =
+        if (isSearchRoute && activity != null) {
+            androidx.hilt.navigation.compose.hiltViewModel(viewModelStoreOwner = activity)
+        } else null
+
     val homeUiState = homeViewModel?.uiState?.collectAsState()?.value
     val hasSelectedPost = (homeUiState as? com.appbuildchat.instaxr.ui.home.HomeUiState.Success)?.selectedPost != null
 
-    // If on home with selected post, show three spatial panels
-    if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
+    val searchUiState = searchViewModel?.uiState?.collectAsState()?.value
+    val isSearchFullSpace = (searchUiState as? com.appbuildchat.instaxr.ui.search.SearchUiState.Success)?.isFullSpaceMode == true
+
+    // If on search in Full Space Mode, render directly in ApplicationSubspace
+    if (isSearchRoute && isSearchFullSpace && searchViewModel != null && searchUiState != null) {
+        // FULL SPACE MODE: Render search content directly
+        com.appbuildchat.instaxr.ui.search.SearchFullSpaceContent(
+            uiState = searchUiState,
+            onAction = searchViewModel::handleAction
+        )
+
+        // Show navigation orbiter
+        Orbiter(
+            position = ContentEdge.Bottom,
+            offset = 100.dp,
+            alignment = Alignment.CenterHorizontally
+        ) {
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(28.dp)),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NavigationItem(Icons.Default.Home, "Home", false) {
+                        navController.navigateSingleTopTo(AppRoutes.HOME)
+                    }
+                    NavigationItem(Icons.Default.Search, "Search", true) { /* Current */ }
+                    NavigationItem(Icons.Default.Add, "Add", false) {
+                        navController.navigateSingleTopTo(AppRoutes.ADD_POST)
+                    }
+                    NavigationItem(Icons.Default.Email, "Messages", false) {
+                        navController.navigateSingleTopTo(AppRoutes.MESSAGES)
+                    }
+                    NavigationItem(Icons.Default.Person, "My Page", false) {
+                        navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
+                    }
+                    NavigationItem(Icons.Default.Settings, "Settings", false) {
+                        navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                    }
+                }
+            }
+        }
+    } else if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
         // EXPANDED STATE: Three separate spatial panels
         com.appbuildchat.instaxr.ui.home.HomeScreenSpatialPanelsAnimated(
             uiState = homeUiState,
