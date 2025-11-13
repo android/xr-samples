@@ -1,0 +1,42 @@
+[
+  {
+    "id": "msg_7_1",
+    "chatId": "chat_6",
+    "senderId": "user_7",
+    "message": "Have you tried the new XR features in Android?",
+    "timestamp": 1699372800000,
+    "isMe": false
+  },
+  {
+    "id": "msg_7_2",
+    "chatId": "chat_6",
+    "senderId": "me",
+    "message": "Not yet! Are they good?",
+    "timestamp": 1699373400000,
+    "isMe": true
+  },
+  {
+    "id": "msg_7_3",
+    "chatId": "chat_6",
+    "senderId": "user_7",
+    "message": "They're incredible! So much potential for immersive apps",
+    "timestamp": 1699374000000,
+    "isMe": false
+  },
+  {
+    "id": "msg_7_4",
+    "chatId": "chat_6",
+    "senderId": "me",
+    "message": "I need to check this out. Any recommendations?",
+    "timestamp": 1699374600000,
+    "isMe": true
+  },
+  {
+    "id": "msg_7_5",
+    "chatId": "chat_6",
+    "senderId": "user_7",
+    "message": "Check out this new XR app I've been working on",
+    "timestamp": 1699459200000,
+    "isMe": false
+  }
+]

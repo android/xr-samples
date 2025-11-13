@@ -1,0 +1,50 @@
+[
+  {
+    "id": "msg_1_1",
+    "chatId": "chat_1",
+    "senderId": "user_1",
+    "message": "Hey! How are you doing?",
+    "timestamp": 1699804800000,
+    "isMe": false
+  },
+  {
+    "id": "msg_1_2",
+    "chatId": "chat_1",
+    "senderId": "me",
+    "message": "I'm great! Just got back from a hike. How about you?",
+    "timestamp": 1699805400000,
+    "isMe": true
+  },
+  {
+    "id": "msg_1_3",
+    "chatId": "chat_1",
+    "senderId": "user_1",
+    "message": "That sounds amazing! I just got back from Bali",
+    "timestamp": 1699806000000,
+    "isMe": false
+  },
+  {
+    "id": "msg_1_4",
+    "chatId": "chat_1",
+    "senderId": "me",
+    "message": "Wow! How was it?",
+    "timestamp": 1699806600000,
+    "isMe": true
+  },
+  {
+    "id": "msg_1_5",
+    "chatId": "chat_1",
+    "senderId": "user_1",
+    "message": "Absolutely breathtaking! The temples were incredible",
+    "timestamp": 1699807200000,
+    "isMe": false
+  },
+  {
+    "id": "msg_1_6",
+    "chatId": "chat_1",
+    "senderId": "user_1",
+    "message": "The photos from Bali turned out amazing! Can't wait to share them!",
+    "timestamp": 1699891200000,
+    "isMe": false
+  }
+]

@@ -30,7 +30,8 @@ class HomeViewModel @Inject constructor(application: Application) : AndroidViewM
         when (action) {
             is HomeAction.Refresh -> loadHomeFeed()
             is HomeAction.LikePost -> likePost(action.postId)
-            is HomeAction.SelectPost -> selectPost(action.postId)
+            is HomeAction.SelectPost -> selectPost(action.postId, expandedForComments = false)
+            is HomeAction.SelectPostForComments -> selectPost(action.postId, expandedForComments = true)
             is HomeAction.DeselectPost -> deselectPost()
         }
     }
@@ -69,13 +70,13 @@ class HomeViewModel @Inject constructor(application: Application) : AndroidViewM
         }
     }
 
-    private fun selectPost(postId: String) {
-        android.util.Log.d("HomeViewModel", "selectPost called with postId=$postId")
+    private fun selectPost(postId: String, expandedForComments: Boolean) {
+        android.util.Log.d("HomeViewModel", "selectPost called with postId=$postId, expandedForComments=$expandedForComments")
         val currentState = _uiState.value
         if (currentState is HomeUiState.Success) {
             val selectedPost = currentState.posts.find { it.id == postId }
             android.util.Log.d("HomeViewModel", "Found post: $selectedPost")
-            _uiState.value = currentState.copy(selectedPost = selectedPost)
+            _uiState.value = currentState.copy(selectedPost = selectedPost, expandedForComments = expandedForComments)
             android.util.Log.d("HomeViewModel", "Updated state, selectedPost=${(_uiState.value as? HomeUiState.Success)?.selectedPost?.id}")
         }
     }
@@ -83,7 +84,7 @@ class HomeViewModel @Inject constructor(application: Application) : AndroidViewM
     private fun deselectPost() {
         val currentState = _uiState.value
         if (currentState is HomeUiState.Success) {
-            _uiState.value = currentState.copy(selectedPost = null)
+            _uiState.value = currentState.copy(selectedPost = null, expandedForComments = false)
         }
     }
 }
@@ -95,7 +96,8 @@ sealed interface HomeUiState {
     data object Loading : HomeUiState
     data class Success(
         val posts: List<Post>,
-        val selectedPost: Post? = null
+        val selectedPost: Post? = null,
+        val expandedForComments: Boolean = false
     ) : HomeUiState
     data class Error(val message: String) : HomeUiState
 }

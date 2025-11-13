@@ -12,7 +12,7 @@
       "Bash(adb shell am start:*)",
       "Bash(adb shell am:*)",
       "Bash(adb shell:*)",
-      "Bash(adb devices:*)"
+      "Bash(adb:*)"
     ],
     "deny": [],
     "ask": []

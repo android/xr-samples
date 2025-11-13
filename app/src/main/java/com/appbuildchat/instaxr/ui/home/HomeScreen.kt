@@ -1,6 +1,12 @@
 package com.appbuildchat.instaxr.ui.home
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,9 +22,13 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import com.appbuildchat.instaxr.ui.icons.CommentBubble
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -124,6 +134,7 @@ internal fun HomeSpatialContent(
                                 posts = uiState.posts,
                                 onPostImageClick = { postId -> onAction(HomeAction.SelectPost(postId)) },
                                 onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
+                                onCommentClick = { postId -> onAction(HomeAction.SelectPostForComments(postId)) },
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -194,6 +205,7 @@ internal fun HomeContent(
                         posts = uiState.posts,
                         onPostImageClick = { postId -> onAction(HomeAction.SelectPost(postId)) },
                         onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
+                        onCommentClick = { postId -> onAction(HomeAction.SelectPostForComments(postId)) },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -210,8 +222,9 @@ internal fun HomeContent(
 }
 
 /**
- * Three separate spatial panels independently positioned
- * Each panel can be moved independently without SpatialRow constraint
+ * Three separate spatial panels with animated width transition for the left panel
+ * When entering from shrinked state, the left panel animates from 680dp to 250dp
+ * This creates a smooth shrinking effect as the layout expands to three panels
  */
 @SuppressLint("RestrictedApi")
 @Composable
@@ -220,74 +233,168 @@ fun HomeScreenSpatialPanelsAnimated(
     onAction: (HomeAction) -> Unit
 ) {
     if (uiState is HomeUiState.Success && uiState.selectedPost != null) {
-        // Left panel - Compact posts list (independently movable)
-        SpatialPanel(
-            modifier = SubspaceModifier
-                .width(250.dp)
-                .height(700.dp)
-                .offset(x = (-500).dp, y = 0.dp, z = 0.dp),
-            dragPolicy = MovePolicy(isEnabled = true),
-            resizePolicy = ResizePolicy(isEnabled = true)
-        ) {
-            Surface {
-                CompactPostsList(
-                    posts = uiState.posts,
-                    selectedPostId = uiState.selectedPost.id,
-                    onPostClick = { postId -> onAction(HomeAction.SelectPost(postId)) },
-                    modifier = Modifier.fillMaxSize()
+        // Animate the left panel width from initial (680dp) to compact (250dp)
+        val leftPanelWidth by animateDpAsState(
+            targetValue = 250.dp,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            label = "leftPanelWidth"
+        )
+
+        // Animate alpha for center and right panels (fade in effect)
+        val animatedAlpha = remember { Animatable(0f) }
+        LaunchedEffect(Unit) {
+            launch {
+                animatedAlpha.animateTo(
+                    1f,
+                    animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
                 )
             }
         }
 
-        // Center panel - Large image (independently movable)
-        SpatialPanel(
-            modifier = SubspaceModifier
-                .width(900.dp)
-                .height(900.dp)
-                .offset(x = 0.dp, y = 0.dp, z = 0.dp),
-            dragPolicy = MovePolicy(isEnabled = true),
-            resizePolicy = ResizePolicy(isEnabled = true)
-        ) {
-            Surface {
-                CentralImagePreview(
-                    post = uiState.selectedPost,
-                    onClose = { onAction(HomeAction.DeselectPost) },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
-
-        // Right panel - Description and comments (independently movable)
-        SpatialPanel(
-            modifier = SubspaceModifier
-                .width(400.dp)
-                .height(700.dp)
-                .offset(x = 700.dp, y = 0.dp, z = 0.dp),
-            dragPolicy = MovePolicy(isEnabled = true),
-            resizePolicy = ResizePolicy(isEnabled = true)
-        ) {
-            Surface {
-                DescriptionAndCommentsPanel(
-                    post = uiState.selectedPost,
-                    onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            // Close button orbiter
-            Orbiter(
-                position = androidx.xr.compose.spatial.ContentEdge.Top,
-                offset = 16.dp,
-                alignment = androidx.compose.ui.Alignment.End
+        SpatialRow {
+            // Left panel - Compact posts list with animated width shrinking (height stays constant)
+            SpatialPanel(
+                modifier = SubspaceModifier
+                    .width(leftPanelWidth)
+                    .height(700.dp),
+                dragPolicy = MovePolicy(isEnabled = true),
+                resizePolicy = ResizePolicy(isEnabled = false)
             ) {
-                FilledTonalIconButton(
-                    onClick = { onAction(HomeAction.DeselectPost) },
-                    modifier = Modifier.size(48.dp)
+                Surface(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close expanded view"
+                    CompactPostsList(
+                        posts = uiState.posts,
+                        selectedPostId = uiState.selectedPost.id,
+                        onPostClick = { postId ->
+                            if (uiState.expandedForComments) {
+                                onAction(HomeAction.SelectPostForComments(postId))
+                            } else {
+                                onAction(HomeAction.SelectPost(postId))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     )
+                }
+            }
+
+            // Center/right panels reordered based on expandedForComments
+            if (uiState.expandedForComments) {
+                // When expanded for comments: Comments panel comes first (center), then image (right)
+
+                // Center panel - Description and comments with fade in animation
+                SpatialPanel(
+                    modifier = SubspaceModifier
+                        .width(400.dp)
+                        .height(700.dp),
+                    dragPolicy = MovePolicy(isEnabled = true),
+                    resizePolicy = ResizePolicy(isEnabled = false)
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize().alpha(animatedAlpha.value)
+                    ) {
+                        DescriptionAndCommentsPanel(
+                            post = uiState.selectedPost,
+                            onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    // Floating close button (Orbiter)
+                    Orbiter(
+                        position = androidx.xr.compose.spatial.ContentEdge.Top,
+                        offset = 16.dp,
+                        alignment = androidx.compose.ui.Alignment.End
+                    ) {
+                        FilledTonalIconButton(
+                            onClick = { onAction(HomeAction.DeselectPost) },
+                            modifier = Modifier.size(48.dp).alpha(animatedAlpha.value)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close expanded view"
+                            )
+                        }
+                    }
+                }
+
+                // Right panel - Image preview (bigger)
+                SpatialPanel(
+                    modifier = SubspaceModifier
+                        .width(900.dp)
+                        .height(700.dp),
+                    dragPolicy = MovePolicy(isEnabled = true),
+                    resizePolicy = ResizePolicy(isEnabled = true)
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize().alpha(animatedAlpha.value)
+                    ) {
+                        CentralImagePreview(
+                            post = uiState.selectedPost,
+                            onClose = { onAction(HomeAction.DeselectPost) },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+            } else {
+                // Normal mode: Image comes first (center), then comments (right)
+
+                // Central panel - Large image preview with fade in animation
+                SpatialPanel(
+                    modifier = SubspaceModifier
+                        .width(900.dp)
+                        .height(700.dp),
+                    dragPolicy = MovePolicy(isEnabled = true),
+                    resizePolicy = ResizePolicy(isEnabled = true)
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize().alpha(animatedAlpha.value)
+                    ) {
+                        CentralImagePreview(
+                            post = uiState.selectedPost,
+                            onClose = { onAction(HomeAction.DeselectPost) },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+
+                // Right panel - Description and comments with fade in animation
+                SpatialPanel(
+                    modifier = SubspaceModifier
+                        .width(400.dp)
+                        .height(700.dp),
+                    dragPolicy = MovePolicy(isEnabled = true),
+                    resizePolicy = ResizePolicy(isEnabled = false)
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize().alpha(animatedAlpha.value)
+                    ) {
+                        DescriptionAndCommentsPanel(
+                            post = uiState.selectedPost,
+                            onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    // Floating close button (Orbiter)
+                    Orbiter(
+                        position = androidx.xr.compose.spatial.ContentEdge.Top,
+                        offset = 16.dp,
+                        alignment = androidx.compose.ui.Alignment.End
+                    ) {
+                        FilledTonalIconButton(
+                            onClick = { onAction(HomeAction.DeselectPost) },
+                            modifier = Modifier.size(48.dp).alpha(animatedAlpha.value)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close expanded view"
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -370,6 +477,7 @@ private fun PostsList(
     posts: List<Post>,
     onPostImageClick: (String) -> Unit,
     onLikeClick: (String) -> Unit,
+    onCommentClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -381,6 +489,7 @@ private fun PostsList(
                 post = post,
                 onPostImageClick = { onPostImageClick(post.id) },
                 onLikeClick = { onLikeClick(post.id) },
+                onCommentClick = { onCommentClick(post.id) },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -396,6 +505,7 @@ private fun PostItem(
     post: Post,
     onPostImageClick: () -> Unit,
     onLikeClick: () -> Unit,
+    onCommentClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -423,6 +533,7 @@ private fun PostItem(
             likeCount = post.likeCount,
             commentCount = post.commentCount,
             onLikeClick = onLikeClick,
+            onCommentClick = onCommentClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp)
@@ -524,18 +635,36 @@ private fun PostImage(
     )
 
     if (resourceId != 0) {
-        Image(
-            painter = painterResource(id = resourceId),
-            contentDescription = "Post image",
+        Box(
             modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = 300.dp, max = 500.dp)
-                .then(
-                    if (onClick != null) Modifier.clickable(onClick = onClick)
-                    else Modifier
-                ),
-            contentScale = ContentScale.Crop
-        )
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            // Loading indicator shown while image loads
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp)
+            )
+
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(resourceId)
+                    .size(800) // Limit size to prevent bitmap too large crash
+                    .crossfade(true)
+                    .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+                    .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = "Post image",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (onClick != null) Modifier.clickable(onClick = onClick)
+                        else Modifier
+                    ),
+                contentScale = ContentScale.Crop
+            )
+        }
     } else {
         // Fallback placeholder
         Box(
@@ -567,6 +696,7 @@ private fun PostActions(
     likeCount: Int,
     commentCount: Int,
     onLikeClick: () -> Unit,
+    onCommentClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -593,9 +723,10 @@ private fun PostActions(
             )
         }
 
-        // Comment icon with count
+        // Comment icon with count (clickable)
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = if (onCommentClick != null) Modifier.clickable(onClick = onCommentClick) else Modifier
         ) {
             Icon(
                 imageVector = Icons.Filled.CommentBubble,
@@ -710,22 +841,34 @@ private fun CompactPostItem(
             )
             .padding(8.dp)
     ) {
-        // Small thumbnail
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(resourceId)
-                .size(600) // Reasonable thumbnail size
-                .crossfade(true)
-                .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
-                .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
-                .build(),
-            contentDescription = "Post thumbnail",
+        // Small thumbnail with loading indicator
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
-                .clip(MaterialTheme.shapes.small),
-            contentScale = ContentScale.Crop
-        )
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            // Loading indicator shown while image loads
+            CircularProgressIndicator(
+                modifier = Modifier.size(32.dp)
+            )
+
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(resourceId)
+                    .size(600) // Reasonable thumbnail size
+                    .crossfade(true)
+                    .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+                    .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = "Post thumbnail",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(MaterialTheme.shapes.small),
+                contentScale = ContentScale.Crop
+            )
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -763,6 +906,11 @@ private fun CentralImagePreview(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Loading indicator shown while image loads
+        CircularProgressIndicator(
+            modifier = Modifier.size(64.dp)
+        )
+
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(resourceId)
@@ -965,5 +1113,6 @@ sealed interface HomeAction {
     data object Refresh : HomeAction
     data class LikePost(val postId: String) : HomeAction
     data class SelectPost(val postId: String) : HomeAction
+    data class SelectPostForComments(val postId: String) : HomeAction
     data object DeselectPost : HomeAction
 }
