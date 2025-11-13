@@ -2,8 +2,11 @@ package com.appbuildchat.instaxr.ui.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,12 +53,14 @@ import androidx.xr.compose.subspace.SpatialRow
 import androidx.xr.compose.subspace.MovePolicy
 import androidx.xr.compose.subspace.ResizePolicy
 import androidx.xr.compose.subspace.layout.SubspaceModifier
+import androidx.xr.compose.subspace.layout.alpha
 import androidx.xr.compose.subspace.layout.height
 import androidx.xr.compose.subspace.layout.width
 import androidx.xr.compose.subspace.layout.offset
 import com.appbuildchat.instaxr.data.model.ExploreItem
 import com.appbuildchat.instaxr.ui.components.CompactInfiniteGrid
 import com.appbuildchat.instaxr.ui.components.InfiniteGrid
+import com.appbuildchat.instaxr.ui.components.LoadDirection
 import com.appbuildchat.instaxr.ui.components.SearchBar
 import com.appbuildchat.instaxr.ui.search.components.ExploreGridItem
 import com.appbuildchat.instaxr.ui.search.components.SphericalExploreGrid
@@ -618,8 +627,13 @@ private fun ItemDetailsPanel(
 }
 
 /**
- * Full Space Spherical View: Cylindrical grid arranged around the user
- * Supports omnidirectional scrolling and gesture navigation
+ * Full Space Spherical View: 3 large curved panels for immersive explore experience
+ * Mimics Instagram explore grid with vertical levels
+ *
+ * Layout:
+ * - Upper panel: +35° elevation, 600dp height
+ * - Middle panel: 0° elevation (eye level), 900dp height
+ * - Lower panel: -35° elevation, 600dp height
  */
 @Composable
 private fun FullSpaceSphericalView(
@@ -629,67 +643,122 @@ private fun FullSpaceSphericalView(
     onAction: (SearchAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    android.util.Log.d("SearchScreen", "FullSpaceSphericalView with ${exploreItems.size} items")
+    android.util.Log.d("SearchScreen", "FullSpaceSphericalView with ${exploreItems.size} items - 3 large curved panels")
 
-    // Full Space Mode: Larger panel, minimal offset
-    // In Full Space, coordinate system is relative to user's head position
-    SpatialPanel(
-        modifier = SubspaceModifier
-            .width(800.dp)
-            .height(600.dp),
-            // No offset - render at origin (directly in front of user)
-        dragPolicy = MovePolicy(isEnabled = true),
-        resizePolicy = ResizePolicy(isEnabled = true)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.primary
+    // 3 large curved panels configuration
+    val panels = listOf(
+        CurvedPanelConfig(name = "Upper", elevation = 35f, height = 600.dp, width = 2400.dp),
+        CurvedPanelConfig(name = "Middle", elevation = 0f, height = 900.dp, width = 2400.dp),
+        CurvedPanelConfig(name = "Lower", elevation = -35f, height = 600.dp, width = 2400.dp)
+    )
+
+    val distanceFromUser = 1200.dp // Distance in front of user
+
+    // Divide items across 3 panels
+    val itemsPerPanel = (exploreItems.size / 3).coerceAtLeast(10)
+
+    panels.forEachIndexed { index, panelConfig ->
+        // Calculate Y position based on elevation
+        val elevationRad = Math.toRadians(panelConfig.elevation.toDouble())
+        val yOffset = (distanceFromUser.value * kotlin.math.sin(elevationRad)).toFloat()
+        val zOffset = -(distanceFromUser.value * kotlin.math.cos(elevationRad)).toFloat() // Negative Z = in front
+
+        // Get items for this panel
+        val startIndex = index * itemsPerPanel
+        val endIndex = ((index + 1) * itemsPerPanel).coerceAtMost(exploreItems.size)
+        val panelItems = if (startIndex < exploreItems.size) {
+            exploreItems.subList(startIndex, endIndex)
+        } else {
+            emptyList()
+        }
+
+        android.util.Log.d("SearchScreen", "${panelConfig.name} panel: ${panelItems.size} items, Y=$yOffset, Z=$zOffset")
+
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(panelConfig.width)
+                .height(panelConfig.height)
+                .offset(
+                    x = 0.dp,
+                    y = yOffset.dp,
+                    z = zOffset.dp
+                ),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
-            ) {
-                Text(
-                    text = "✨ FULL SPACE MODE ✨",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold
-                )
+            CurvedPanelContent(
+                items = panelItems,
+                onItemClick = { item -> onAction(SearchAction.FocusItem(item)) },
+                onLoadMore = { direction -> onAction(SearchAction.LoadMore(direction)) },
+                panelName = panelConfig.name
+            )
+        }
+    }
+}
 
-                Spacer(modifier = Modifier.height(24.dp))
+/**
+ * Configuration for a single curved panel
+ */
+private data class CurvedPanelConfig(
+    val name: String,       // Panel name (Upper/Middle/Lower)
+    val elevation: Float,   // Elevation angle in degrees (+up, -down)
+    val height: Dp,         // Panel height
+    val width: Dp           // Panel width
+)
 
-                Text(
-                    text = "${exploreItems.size} items loaded",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+/**
+ * Content for a single curved panel with InfiniteGrid
+ */
+@Composable
+private fun CurvedPanelContent(
+    items: List<ExploreItem>,
+    onItemClick: (ExploreItem) -> Unit,
+    onLoadMore: (LoadDirection) -> Unit,
+    panelName: String
+) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Header
+            Text(
+                text = "Explore - $panelName",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "✅ Panel is rendering!",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "No Subspace wrapper",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Size: 800x600dp | Offset: None",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                )
+            // Infinite grid of explore items
+            if (items.isNotEmpty()) {
+                val gridState = rememberLazyGridState()
+                InfiniteGrid(
+                    items = items,
+                    onLoadMore = onLoadMore,
+                    state = gridState,
+                    modifier = Modifier.fillMaxSize()
+                ) { item ->
+                    ExploreGridItem(
+                        item = item,
+                        onClick = { onItemClick(item) }
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No items in $panelName panel",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
             }
         }
     }

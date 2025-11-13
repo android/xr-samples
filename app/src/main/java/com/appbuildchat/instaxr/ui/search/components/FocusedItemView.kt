@@ -7,6 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -93,7 +94,7 @@ fun FocusedItemView(
     )
 
     Subspace {
-        // Background dimmer
+        // Background dimmer - clickable to dismiss
         SpatialPanel(
             modifier = SubspaceModifier
                 .width(3000.dp)
@@ -107,6 +108,7 @@ fun FocusedItemView(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.7f))
+                    .clickable { onDismiss() } // Click background to close
             )
         }
 
