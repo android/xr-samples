@@ -1,0 +1,42 @@
+[
+  {
+    "id": "msg_4_1",
+    "chatId": "chat_4",
+    "senderId": "user_4",
+    "message": "Ready for tomorrow's training session?",
+    "timestamp": 1699545600000,
+    "isMe": false
+  },
+  {
+    "id": "msg_4_2",
+    "chatId": "chat_4",
+    "senderId": "me",
+    "message": "Absolutely! What's on the agenda?",
+    "timestamp": 1699546200000,
+    "isMe": true
+  },
+  {
+    "id": "msg_4_3",
+    "chatId": "chat_4",
+    "senderId": "user_4",
+    "message": "HIIT cardio and strength training. Bring your A-game!",
+    "timestamp": 1699546800000,
+    "isMe": false
+  },
+  {
+    "id": "msg_4_4",
+    "chatId": "chat_4",
+    "senderId": "me",
+    "message": "Challenge accepted!",
+    "timestamp": 1699547400000,
+    "isMe": true
+  },
+  {
+    "id": "msg_4_5",
+    "chatId": "chat_4",
+    "senderId": "me",
+    "message": "Great workout today! Thanks for the tips",
+    "timestamp": 1699632000000,
+    "isMe": true
+  }
+]

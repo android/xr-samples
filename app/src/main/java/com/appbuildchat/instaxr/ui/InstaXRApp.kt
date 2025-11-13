@@ -89,6 +89,7 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
 
     // Check if we're on home route
     val isHomeRoute = currentRoute == AppRoutes.HOME
+    val isMessagesRoute = currentRoute == AppRoutes.MESSAGES
 
     // Get activity-scoped HomeViewModel (same instance as HomeScreen uses)
     val homeViewModel: com.appbuildchat.instaxr.ui.home.HomeViewModel? =
@@ -96,11 +97,70 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
             androidx.hilt.navigation.compose.hiltViewModel(viewModelStoreOwner = activity)
         } else null
 
+    // Get activity-scoped MessagesViewModel (same instance as MessagesScreen uses)
+    val messagesViewModel: com.appbuildchat.instaxr.ui.messages.MessagesViewModel? =
+        if (isMessagesRoute && activity != null) {
+            androidx.hilt.navigation.compose.hiltViewModel(viewModelStoreOwner = activity)
+        } else null
+
     val homeUiState = homeViewModel?.uiState?.collectAsState()?.value
     val hasSelectedPost = (homeUiState as? com.appbuildchat.instaxr.ui.home.HomeUiState.Success)?.selectedPost != null
 
-    // If on home with selected post, show three spatial panels
-    if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
+    val messagesUiState = messagesViewModel?.uiState?.collectAsState()?.value
+    val hasSelectedChat = (messagesUiState as? com.appbuildchat.instaxr.ui.messages.MessagesUiState.Success)?.selectedChat != null
+
+    // If on messages with selected chat, show two spatial panels
+    if (isMessagesRoute && hasSelectedChat && messagesViewModel != null && messagesUiState != null) {
+        // EXPANDED STATE: Two separate spatial panels for messages
+        com.appbuildchat.instaxr.ui.messages.MessagesScreenSpatialPanels(
+            uiState = messagesUiState as com.appbuildchat.instaxr.ui.messages.MessagesUiState.Success,
+            onAction = messagesViewModel::handleAction
+        )
+
+        // Still show navigation orbiter
+        Orbiter(
+            position = ContentEdge.Bottom,
+            offset = 100.dp,
+            alignment = Alignment.CenterHorizontally
+        ) {
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(28.dp)),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NavigationItem(Icons.Default.Home, "Home", false) {
+                        messagesViewModel.handleAction(com.appbuildchat.instaxr.ui.messages.MessagesAction.DeselectChat)
+                        navController.navigateSingleTopTo(AppRoutes.HOME)
+                    }
+                    NavigationItem(Icons.Default.Search, "Search", false) {
+                        messagesViewModel.handleAction(com.appbuildchat.instaxr.ui.messages.MessagesAction.DeselectChat)
+                        navController.navigateSingleTopTo(AppRoutes.SEARCH)
+                    }
+                    NavigationItem(Icons.Default.Add, "Add", false) {
+                        messagesViewModel.handleAction(com.appbuildchat.instaxr.ui.messages.MessagesAction.DeselectChat)
+                        navController.navigateSingleTopTo(AppRoutes.ADD_POST)
+                    }
+                    NavigationItem(Icons.Default.Email, "Messages", true) {
+                        messagesViewModel.handleAction(com.appbuildchat.instaxr.ui.messages.MessagesAction.DeselectChat)
+                    }
+                    NavigationItem(Icons.Default.Person, "My Page", false) {
+                        messagesViewModel.handleAction(com.appbuildchat.instaxr.ui.messages.MessagesAction.DeselectChat)
+                        navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
+                    }
+                    NavigationItem(Icons.Default.Settings, "Settings", false) {
+                        messagesViewModel.handleAction(com.appbuildchat.instaxr.ui.messages.MessagesAction.DeselectChat)
+                        navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                    }
+                }
+            }
+        }
+    } else if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
         // EXPANDED STATE: Three separate spatial panels
         com.appbuildchat.instaxr.ui.home.HomeScreenSpatialPanelsAnimated(
             uiState = homeUiState,

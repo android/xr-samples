@@ -1,0 +1,80 @@
+[
+  {
+    "id": "chat_1",
+    "userId": "user_1",
+    "username": "sarah_travels",
+    "displayName": "Sarah Anderson",
+    "profileImage": "profile_1.jpg",
+    "lastMessage": {
+      "sender": "sarah_travels",
+      "message": "The photos from Bali turned out amazing! Can't wait to share them!",
+      "timestamp": 1699891200000
+    },
+    "unreadCount": 2
+  },
+  {
+    "id": "chat_2",
+    "userId": "user_2",
+    "username": "alex_foodie",
+    "displayName": "Alex Chen",
+    "profileImage": "profile_2.jpg",
+    "lastMessage": {
+      "sender": "me",
+      "message": "That recipe looks delicious! I'll try it this weekend",
+      "timestamp": 1699804800000
+    },
+    "unreadCount": 0
+  },
+  {
+    "id": "chat_3",
+    "userId": "user_3",
+    "username": "emma_creative",
+    "displayName": "Emma Williams",
+    "profileImage": "profile_3.jpg",
+    "lastMessage": {
+      "sender": "emma_creative",
+      "message": "I just finished the new painting series, you have to see it!",
+      "timestamp": 1699718400000
+    },
+    "unreadCount": 1
+  },
+  {
+    "id": "chat_4",
+    "userId": "user_4",
+    "username": "mike_fitness",
+    "displayName": "Mike Johnson",
+    "profileImage": "profile_4.jpg",
+    "lastMessage": {
+      "sender": "me",
+      "message": "Great workout today! Thanks for the tips",
+      "timestamp": 1699632000000
+    },
+    "unreadCount": 0
+  },
+  {
+    "id": "chat_5",
+    "userId": "user_6",
+    "username": "sophie_nature",
+    "displayName": "Sophie Martinez",
+    "profileImage": "profile_6.jpg",
+    "lastMessage": {
+      "sender": "sophie_nature",
+      "message": "I spotted a rare bird species today! Sending you the photos now",
+      "timestamp": 1699545600000
+    },
+    "unreadCount": 3
+  },
+  {
+    "id": "chat_6",
+    "userId": "user_7",
+    "username": "david_tech",
+    "displayName": "David Lee",
+    "profileImage": "profile_7.jpg",
+    "lastMessage": {
+      "sender": "david_tech",
+      "message": "Check out this new XR app I've been working on",
+      "timestamp": 1699459200000
+    },
+    "unreadCount": 0
+  }
+]
