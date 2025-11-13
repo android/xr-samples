@@ -1,0 +1,34 @@
+[
+  {
+    "id": "msg_3_1",
+    "chatId": "chat_3",
+    "senderId": "me",
+    "message": "Love your latest artwork! The colors are stunning",
+    "timestamp": 1699632000000,
+    "isMe": true
+  },
+  {
+    "id": "msg_3_2",
+    "chatId": "chat_3",
+    "senderId": "user_3",
+    "message": "Thank you so much! I was experimenting with acrylics",
+    "timestamp": 1699632600000,
+    "isMe": false
+  },
+  {
+    "id": "msg_3_3",
+    "chatId": "chat_3",
+    "senderId": "me",
+    "message": "It really shows! The texture is beautiful",
+    "timestamp": 1699633200000,
+    "isMe": true
+  },
+  {
+    "id": "msg_3_4",
+    "chatId": "chat_3",
+    "senderId": "user_3",
+    "message": "I just finished the new painting series, you have to see it!",
+    "timestamp": 1699718400000,
+    "isMe": false
+  }
+]

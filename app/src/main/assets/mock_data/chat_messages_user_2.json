@@ -1,0 +1,42 @@
+[
+  {
+    "id": "msg_2_1",
+    "chatId": "chat_2",
+    "senderId": "user_2",
+    "message": "Just posted a new recipe on my page!",
+    "timestamp": 1699718400000,
+    "isMe": false
+  },
+  {
+    "id": "msg_2_2",
+    "chatId": "chat_2",
+    "senderId": "me",
+    "message": "Can't wait to check it out! What cuisine?",
+    "timestamp": 1699719000000,
+    "isMe": true
+  },
+  {
+    "id": "msg_2_3",
+    "chatId": "chat_2",
+    "senderId": "user_2",
+    "message": "Korean BBQ fusion! It's a twist on traditional bulgogi",
+    "timestamp": 1699719600000,
+    "isMe": false
+  },
+  {
+    "id": "msg_2_4",
+    "chatId": "chat_2",
+    "senderId": "me",
+    "message": "That sounds incredible! I love Korean food",
+    "timestamp": 1699720200000,
+    "isMe": true
+  },
+  {
+    "id": "msg_2_5",
+    "chatId": "chat_2",
+    "senderId": "me",
+    "message": "That recipe looks delicious! I'll try it this weekend",
+    "timestamp": 1699804800000,
+    "isMe": true
+  }
+]

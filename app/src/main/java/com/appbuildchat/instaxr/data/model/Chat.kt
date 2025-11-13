@@ -5,12 +5,19 @@ package com.appbuildchat.instaxr.data.model
  */
 data class Chat(
     val id: String,
-    val participantIds: List<String>,
-    val participantNames: List<String>,
-    val participantProfileImages: List<String?>,
-    val lastMessage: String? = null,
-    val lastMessageTimestamp: Long = System.currentTimeMillis(),
-    val unreadCount: Int = 0,
-    val isGroup: Boolean = false,
-    val groupName: String? = null
+    val userId: String,
+    val username: String,
+    val displayName: String,
+    val profileImage: String,
+    val lastMessage: LastMessage,
+    val unreadCount: Int = 0
+)
+
+/**
+ * Data model representing the last message in a chat
+ */
+data class LastMessage(
+    val sender: String, // "me" or username
+    val message: String,
+    val timestamp: Long = System.currentTimeMillis()
 )
