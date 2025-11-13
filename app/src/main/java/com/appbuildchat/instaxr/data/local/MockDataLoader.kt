@@ -26,7 +26,7 @@ data class MockUser(
 data class MockPost(
     val id: String,
     val userId: String,
-    val imageUrl: String,
+    val imageUrl: String, // Keep for backward compatibility with JSON
     val description: String,
     val likes: Int,
     val comments: Int,
@@ -87,14 +87,22 @@ object MockDataLoader {
             val mockPosts = json.decodeFromString<List<MockPost>>(jsonString)
             val users = loadUsers(context).associateBy { it.id }
 
-            mockPosts.map { mockPost ->
+            mockPosts.mapIndexed { index, mockPost ->
                 val user = users[mockPost.userId]
+                // Create multiple images for some posts to demonstrate carousel
+                val imageUrls = if (index % 2 == 0) {
+                    // Every other post gets multiple images
+                    listOf(mockPost.imageUrl, mockPost.imageUrl) // Duplicate for demo
+                } else {
+                    listOf(mockPost.imageUrl)
+                }
+
                 Post(
                     id = mockPost.id,
                     userId = mockPost.userId,
                     username = user?.username ?: "unknown",
                     userProfileImageUrl = user?.profileImageUrl,
-                    imageUrl = mockPost.imageUrl,
+                    imageUrls = imageUrls,
                     caption = mockPost.description,
                     likeCount = mockPost.likes,
                     commentCount = mockPost.comments,

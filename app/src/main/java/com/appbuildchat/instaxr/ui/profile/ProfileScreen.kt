@@ -19,6 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -50,6 +53,7 @@ import androidx.xr.compose.subspace.ResizePolicy
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.appbuildchat.instaxr.data.model.Comment
 import com.appbuildchat.instaxr.data.model.Post
 import com.appbuildchat.instaxr.data.model.User
 
@@ -166,7 +170,7 @@ fun ProfileSpatialContent(
 }
 
 /**
- * Two spatial panels for expanded state (profile info + post detail)
+ * Three spatial panels for expanded state (thumbnails + large image + comments)
  */
 @SuppressLint("RestrictedApi")
 @Composable
@@ -176,7 +180,7 @@ fun ProfileScreenSpatialPanelsAnimated(
 ) {
     if (uiState is ProfileUiState.Success && uiState.selectedPost != null) {
         val leftPanelWidth by animateDpAsState(
-            targetValue = 400.dp,
+            targetValue = 250.dp,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
                 stiffness = Spring.StiffnessLow
@@ -185,7 +189,7 @@ fun ProfileScreenSpatialPanelsAnimated(
         )
 
         SpatialRow {
-            // Left panel - Profile info with post grid
+            // Left panel - Thumbnail grid
             SpatialPanel(
                 modifier = SubspaceModifier
                     .width(leftPanelWidth)
@@ -205,7 +209,7 @@ fun ProfileScreenSpatialPanelsAnimated(
                 }
             }
 
-            // Right panel - Selected post detail
+            // Center panel - Large image
             AnimatedVisibility(
                 visible = true,
                 enter = fadeIn(
@@ -229,16 +233,14 @@ fun ProfileScreenSpatialPanelsAnimated(
             ) {
                 SpatialPanel(
                     modifier = SubspaceModifier
-                        .width(900.dp)
+                        .width(700.dp)
                         .height(900.dp),
                     dragPolicy = MovePolicy(isEnabled = true),
                     resizePolicy = ResizePolicy(isEnabled = true)
                 ) {
                     Surface {
-                        PostDetailView(
+                        PostImageView(
                             post = uiState.selectedPost,
-                            onClose = { onAction(ProfileAction.DeselectPost) },
-                            onLikeClick = { /* Handle like */ },
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -258,6 +260,44 @@ fun ProfileScreenSpatialPanelsAnimated(
                                 contentDescription = "Close"
                             )
                         }
+                    }
+                }
+            }
+
+            // Right panel - Profile info + comments
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                ) + expandHorizontally(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    expandFrom = Alignment.Start
+                ),
+                exit = fadeOut(
+                    animationSpec = tween(durationMillis = 300)
+                ) + shrinkHorizontally(
+                    animationSpec = tween(durationMillis = 300),
+                    shrinkTowards = Alignment.Start
+                )
+            ) {
+                SpatialPanel(
+                    modifier = SubspaceModifier
+                        .width(400.dp)
+                        .height(900.dp),
+                    dragPolicy = MovePolicy(isEnabled = true),
+                    resizePolicy = ResizePolicy(isEnabled = false)
+                ) {
+                    Surface {
+                        PostCommentsPanel(
+                            post = uiState.selectedPost,
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                 }
             }
@@ -284,9 +324,9 @@ internal fun ProfileContent(
             }
             is ProfileUiState.Success -> {
                 if (uiState.selectedPost != null) {
-                    // Two panel layout
+                    // Three panel layout
                     Row(modifier = Modifier.fillMaxSize()) {
-                        // Left: Profile info
+                        // Left: Thumbnail grid
                         ProfileMainContent(
                             user = uiState.user,
                             posts = uiState.posts,
@@ -294,17 +334,23 @@ internal fun ProfileContent(
                             onAction = onAction,
                             isCompact = true,
                             modifier = Modifier
-                                .weight(0.3f)
+                                .weight(0.2f)
                                 .fillMaxHeight()
                         )
 
-                        // Right: Post detail
-                        PostDetailView(
+                        // Center: Large image
+                        PostImageView(
                             post = uiState.selectedPost,
-                            onClose = { onAction(ProfileAction.DeselectPost) },
-                            onLikeClick = { /* Handle like */ },
                             modifier = Modifier
-                                .weight(0.7f)
+                                .weight(0.5f)
+                                .fillMaxHeight()
+                        )
+
+                        // Right: Profile info + comments
+                        PostCommentsPanel(
+                            post = uiState.selectedPost,
+                            modifier = Modifier
+                                .weight(0.3f)
                                 .fillMaxHeight()
                         )
                     }
@@ -349,7 +395,6 @@ private fun ProfileMainContent(
         item {
             ProfileHeader(
                 user = user,
-                onEditProfile = { onAction(ProfileAction.EditProfile) },
                 isCompact = isCompact
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -371,85 +416,75 @@ private fun ProfileMainContent(
             PostGrid(
                 posts = posts,
                 onPostClick = { post -> onAction(ProfileAction.SelectPost(post)) },
-                columns = if (isCompact) 2 else 3
+                columns = if (isCompact) 3 else 4
             )
         }
     }
 }
 
 /**
- * Profile header with avatar, stats, and edit button
+ * Profile header with avatar and bio (Instagram style)
  */
 @Composable
 private fun ProfileHeader(
     user: User,
-    onEditProfile: () -> Unit,
     isCompact: Boolean = false
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Profile picture
-        ProfileAvatar(
-            profileImageUrl = user.profileImageUrl,
-            username = user.username,
-            size = if (isCompact) 80.dp else 120.dp
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Username and display name
-        Text(
-            text = user.username,
-            style = if (isCompact) MaterialTheme.typography.titleMedium
-                   else MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        if (!user.displayName.isNullOrBlank() && user.displayName != user.username) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = user.displayName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Stats row
-        if (!isCompact) {
-            StatsRow(
-                postCount = user.postCount,
-                followerCount = user.followerCount,
-                followingCount = user.followingCount
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Bio
-        if (!user.bio.isNullOrBlank() && !isCompact) {
-            Text(
-                text = user.bio,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Edit Profile button
-        Button(
-            onClick = onEditProfile,
+    if (isCompact) {
+        // Compact layout - just name
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = if (isCompact) 8.dp else 32.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Edit Profile")
+            Text(
+                text = user.username,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    } else {
+        // Full layout - Row with avatar + info
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Profile picture
+                ProfileAvatar(
+                    profileImageUrl = user.profileImageUrl,
+                    username = user.username,
+                    size = 80.dp
+                )
+
+                // Username and bio
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = user.username,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    if (!user.bio.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = user.bio,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -506,47 +541,6 @@ private fun PlaceholderAvatar(username: String, size: Dp) {
             text = username.first().uppercaseChar().toString(),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    }
-}
-
-/**
- * Stats row showing posts, followers, following
- */
-@Composable
-private fun StatsRow(
-    postCount: Int,
-    followerCount: Int,
-    followingCount: Int
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        StatItem(label = "Posts", count = postCount)
-        StatItem(label = "Followers", count = followerCount)
-        StatItem(label = "Following", count = followingCount)
-    }
-}
-
-/**
- * Individual stat item
- */
-@Composable
-private fun StatItem(label: String, count: Int) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = formatCount(count),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -636,13 +630,13 @@ private fun TabNavigationOrbiter(
 }
 
 /**
- * Post grid (Instagram-style 3-column grid)
+ * Post grid (Instagram-style grid)
  */
 @Composable
 private fun PostGrid(
     posts: List<Post>,
     onPostClick: (Post) -> Unit,
-    columns: Int = 3
+    columns: Int = 4
 ) {
     if (posts.isEmpty()) {
         Box(
@@ -665,7 +659,7 @@ private fun PostGrid(
             for (row in 0 until rows) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     for (col in 0 until columns) {
                         val index = row * columns + col
@@ -680,14 +674,14 @@ private fun PostGrid(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
     }
 }
 
 /**
- * Post thumbnail for grid
+ * Post thumbnail for grid with rounded corners
  */
 @Composable
 private fun PostThumbnail(
@@ -712,6 +706,7 @@ private fun PostThumbnail(
             contentDescription = "Post thumbnail",
             modifier = modifier
                 .aspectRatio(1f)
+                .clip(MaterialTheme.shapes.medium)
                 .clickable(onClick = onClick),
             contentScale = ContentScale.Crop
         )
@@ -719,6 +714,7 @@ private fun PostThumbnail(
         Box(
             modifier = modifier
                 .aspectRatio(1f)
+                .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
@@ -733,120 +729,190 @@ private fun PostThumbnail(
 }
 
 /**
- * Post detail view
+ * Post image view with carousel for multiple images
  */
 @Composable
-private fun PostDetailView(
+private fun PostImageView(
     post: Post,
-    onClose: () -> Unit,
-    onLikeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val resourceId = context.resources.getIdentifier(
-        post.imageUrl.substringBeforeLast("."),
-        "drawable",
-        context.packageName
-    )
+    val pagerState = rememberPagerState(pageCount = { post.imageUrls.size })
 
-    Column(
+    Box(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.background)
+            .fillMaxSize()
+    ) {
+        if (post.imageUrls.size > 1) {
+            // Multiple images - show pager
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val imageUrl = post.imageUrls[page]
+                val resourceId = context.resources.getIdentifier(
+                    imageUrl.substringBeforeLast("."),
+                    "drawable",
+                    context.packageName
+                )
+
+                if (resourceId != 0) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(resourceId)
+                            .size(1920, 1920)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Post image ${page + 1}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
+            // Page indicator
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                repeat(post.imageUrls.size) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (index == pagerState.currentPage)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.surfaceVariant
+                            )
+                    )
+                }
+            }
+        } else {
+            // Single image
+            val resourceId = context.resources.getIdentifier(
+                post.imageUrl.substringBeforeLast("."),
+                "drawable",
+                context.packageName
+            )
+
+            if (resourceId != 0) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(resourceId)
+                        .size(1920, 1920)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Post image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Post comments panel with profile info and comments
+ */
+@Composable
+private fun PostCommentsPanel(
+    post: Post,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
         modifier = modifier
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        // Close button
-        IconButton(
-            onClick = onClose,
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Icon(Icons.Default.Close, contentDescription = "Close")
+        // Profile header
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProfileAvatar(
+                    profileImageUrl = post.userProfileImageUrl,
+                    username = post.username,
+                    size = 48.dp
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = post.username,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        // Post image
-        if (resourceId != 0) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(resourceId)
-                    .size(1920, 1920)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Post image",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(MaterialTheme.shapes.medium),
-                contentScale = ContentScale.Fit
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Post info
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ProfileAvatar(
-                profileImageUrl = post.userProfileImageUrl,
-                username = post.username,
-                size = 40.dp
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = post.username,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         // Caption
         if (!post.caption.isNullOrBlank()) {
+            item {
+                Text(
+                    text = post.caption,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        // Comments section header
+        item {
             Text(
-                text = post.caption,
-                style = MaterialTheme.typography.bodyMedium,
+                text = "Comments",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        // Like and comment counts
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable(onClick = onLikeClick)
-            ) {
-                Icon(
-                    imageVector = if (post.isLiked) Icons.Filled.Favorite
-                                 else Icons.Filled.FavoriteBorder,
-                    contentDescription = "Like",
-                    tint = if (post.isLiked) MaterialTheme.colorScheme.error
-                          else MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = formatCount(post.likeCount),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+        // Comments list
+        items(post.comments) { comment ->
+            CommentItem(comment = comment)
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+    }
+}
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.CommentBubble,
-                    contentDescription = "Comments",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = formatCount(post.commentCount),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+/**
+ * Individual comment item
+ */
+@Composable
+private fun CommentItem(comment: Comment) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ProfileAvatar(
+            profileImageUrl = comment.userProfileImageUrl,
+            username = comment.username,
+            size = 32.dp
+        )
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = comment.username,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = comment.text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

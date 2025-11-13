@@ -29,11 +29,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun handleAction(action: ProfileAction) {
         when (action) {
             is ProfileAction.Refresh -> loadProfile()
-            is ProfileAction.EditProfile -> editProfile()
             is ProfileAction.SelectPost -> selectPost(action.post)
             is ProfileAction.DeselectPost -> deselectPost()
             is ProfileAction.ChangeTab -> changeTab(action.tab)
-            is ProfileAction.ToggleFollow -> toggleFollow()
         }
     }
 
@@ -69,11 +67,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    private fun editProfile() {
-        // TODO: Implement edit profile logic
-        // For now, just a placeholder
-    }
-
     private fun selectPost(post: Post) {
         val currentState = _uiState.value
         if (currentState is ProfileUiState.Success) {
@@ -104,16 +97,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             )
         }
     }
-
-    private fun toggleFollow() {
-        val currentState = _uiState.value
-        if (currentState is ProfileUiState.Success) {
-            val updatedUser = currentState.user.copy(
-                isFollowing = !currentState.user.isFollowing
-            )
-            _uiState.value = currentState.copy(user = updatedUser)
-        }
-    }
 }
 
 /**
@@ -136,11 +119,9 @@ sealed interface ProfileUiState {
  */
 sealed interface ProfileAction {
     data object Refresh : ProfileAction
-    data object EditProfile : ProfileAction
     data class SelectPost(val post: Post) : ProfileAction
     data object DeselectPost : ProfileAction
     data class ChangeTab(val tab: ProfileTab) : ProfileAction
-    data object ToggleFollow : ProfileAction
 }
 
 /**
