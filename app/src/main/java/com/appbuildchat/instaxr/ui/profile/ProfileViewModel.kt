@@ -1,6 +1,7 @@
 package com.appbuildchat.instaxr.ui.profile
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.appbuildchat.instaxr.data.local.MockDataLoader
@@ -32,6 +33,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             is ProfileAction.SelectPost -> selectPost(action.post)
             is ProfileAction.DeselectPost -> deselectPost()
             is ProfileAction.ChangeTab -> changeTab(action.tab)
+            is ProfileAction.ToggleLike -> toggleLike(action.postId)
+            is ProfileAction.SendMessage -> sendMessageFor(action.postId)
+            is ProfileAction.Repost -> repostPost(action.postId)
+            is ProfileAction.ShowNextPost -> showNextPost(action.currentPostId)
         }
     }
 
@@ -97,6 +102,50 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             )
         }
     }
+
+    private fun toggleLike(postId: String) {
+        val currentState = _uiState.value
+        if (currentState is ProfileUiState.Success) {
+            allPosts = allPosts.map { post ->
+                if (post.id == postId) post.toggleLikeState() else post
+            }
+
+            val updatedPosts = currentState.posts.map { post ->
+                if (post.id == postId) post.toggleLikeState() else post
+            }
+
+            val updatedSelected = currentState.selectedPost?.let { selected ->
+                if (selected.id == postId) selected.toggleLikeState() else selected
+            }
+
+            _uiState.value = currentState.copy(
+                posts = updatedPosts,
+                selectedPost = updatedSelected
+            )
+        }
+    }
+
+    private fun sendMessageFor(postId: String) {
+        Log.d("ProfileViewModel", "Send message tapped for $postId")
+        // Placeholder for future messaging workflow
+    }
+
+    private fun repostPost(postId: String) {
+        Log.d("ProfileViewModel", "Repost tapped for $postId")
+        // Placeholder for future repost workflow
+    }
+
+    private fun showNextPost(currentPostId: String) {
+        val currentState = _uiState.value
+        if (currentState is ProfileUiState.Success && currentState.posts.isNotEmpty()) {
+            val currentIndex = currentState.posts.indexOfFirst { it.id == currentPostId }
+            val nextIndex = if (currentIndex == -1) 0 else (currentIndex + 1) % currentState.posts.size
+            _uiState.value = currentState.copy(
+                selectedPost = currentState.posts[nextIndex],
+                isExpanded = true
+            )
+        }
+    }
 }
 
 /**
@@ -122,6 +171,10 @@ sealed interface ProfileAction {
     data class SelectPost(val post: Post) : ProfileAction
     data object DeselectPost : ProfileAction
     data class ChangeTab(val tab: ProfileTab) : ProfileAction
+    data class ToggleLike(val postId: String) : ProfileAction
+    data class SendMessage(val postId: String) : ProfileAction
+    data class Repost(val postId: String) : ProfileAction
+    data class ShowNextPost(val currentPostId: String) : ProfileAction
 }
 
 /**
@@ -131,4 +184,10 @@ enum class ProfileTab {
     POSTS,
     REELS,
     TAGGED
+}
+
+private fun Post.toggleLikeState(): Post {
+    val nowLiked = !isLiked
+    val updatedCount = (likeCount + if (nowLiked) 1 else -1).coerceAtLeast(0)
+    return copy(isLiked = nowLiked, likeCount = updatedCount)
 }

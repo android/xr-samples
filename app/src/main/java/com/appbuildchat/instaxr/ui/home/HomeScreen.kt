@@ -1,15 +1,6 @@
 package com.appbuildchat.instaxr.ui.home
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,8 +26,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.compose.spatial.Orbiter
 import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.subspace.SpatialPanel
@@ -44,7 +33,7 @@ import androidx.xr.compose.subspace.SpatialRow
 import androidx.xr.compose.subspace.layout.SubspaceModifier
 import androidx.xr.compose.subspace.layout.height
 import androidx.xr.compose.subspace.layout.width
-import androidx.xr.compose.subspace.layout.fillMaxHeight
+import androidx.xr.compose.subspace.layout.offset
 import androidx.xr.compose.subspace.MovePolicy
 import androidx.xr.compose.subspace.ResizePolicy
 import coil3.compose.AsyncImage
@@ -221,9 +210,8 @@ internal fun HomeContent(
 }
 
 /**
- * Three separate spatial panels with animated width transition for the left panel
- * When entering from shrinked state, the left panel animates from 680dp to 250dp
- * This creates a smooth shrinking effect as the layout expands to three panels
+ * Three separate spatial panels independently positioned
+ * Each panel can be moved independently without SpatialRow constraint
  */
 @SuppressLint("RestrictedApi")
 @Composable
@@ -232,127 +220,74 @@ fun HomeScreenSpatialPanelsAnimated(
     onAction: (HomeAction) -> Unit
 ) {
     if (uiState is HomeUiState.Success && uiState.selectedPost != null) {
-        // Animate the left panel width from initial (680dp) to compact (250dp)
-        val leftPanelWidth by animateDpAsState(
-            targetValue = 250.dp,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "leftPanelWidth"
-        )
+        // Left panel - Compact posts list (independently movable)
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(250.dp)
+                .height(700.dp)
+                .offset(x = (-500).dp, y = 0.dp, z = 0.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
+        ) {
+            Surface {
+                CompactPostsList(
+                    posts = uiState.posts,
+                    selectedPostId = uiState.selectedPost.id,
+                    onPostClick = { postId -> onAction(HomeAction.SelectPost(postId)) },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
 
-        SpatialRow {
-            // Left panel - Compact posts list with animated shrinking
-            SpatialPanel(
-                modifier = SubspaceModifier
-                    .width(leftPanelWidth)
-                    .height(700.dp),
-                dragPolicy = MovePolicy(isEnabled = true),
-                resizePolicy = ResizePolicy(isEnabled = false)
-            ) {
-                Surface {
-                    CompactPostsList(
-                        posts = uiState.posts,
-                        selectedPostId = uiState.selectedPost.id,
-                        onPostClick = { postId -> onAction(HomeAction.SelectPost(postId)) },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+        // Center panel - Large image (independently movable)
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(900.dp)
+                .height(900.dp)
+                .offset(x = 0.dp, y = 0.dp, z = 0.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
+        ) {
+            Surface {
+                CentralImagePreview(
+                    post = uiState.selectedPost,
+                    onClose = { onAction(HomeAction.DeselectPost) },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        // Right panel - Description and comments (independently movable)
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(400.dp)
+                .height(700.dp)
+                .offset(x = 700.dp, y = 0.dp, z = 0.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
+        ) {
+            Surface {
+                DescriptionAndCommentsPanel(
+                    post = uiState.selectedPost,
+                    onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
-            // Central panel - Large image preview with fade in + expand animation
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                ) + expandHorizontally(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    expandFrom = Alignment.Start
-                ),
-                exit = fadeOut(
-                    animationSpec = tween(durationMillis = 300)
-                ) + shrinkHorizontally(
-                    animationSpec = tween(durationMillis = 300),
-                    shrinkTowards = Alignment.Start
-                )
+            // Close button orbiter
+            Orbiter(
+                position = androidx.xr.compose.spatial.ContentEdge.Top,
+                offset = 16.dp,
+                alignment = androidx.compose.ui.Alignment.End
             ) {
-                SpatialPanel(
-                    modifier = SubspaceModifier
-                        .width(900.dp)
-                        .height(900.dp),
-                    dragPolicy = MovePolicy(isEnabled = true),
-                    resizePolicy = ResizePolicy(isEnabled = true)
+                FilledTonalIconButton(
+                    onClick = { onAction(HomeAction.DeselectPost) },
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Surface {
-                        CentralImagePreview(
-                            post = uiState.selectedPost,
-                            onClose = { onAction(HomeAction.DeselectPost) },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-            }
-
-            // Right panel - Description and comments with fade in + expand animation
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close expanded view"
                     )
-                ) + expandHorizontally(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    expandFrom = Alignment.Start
-                ),
-                exit = fadeOut(
-                    animationSpec = tween(durationMillis = 300)
-                ) + shrinkHorizontally(
-                    animationSpec = tween(durationMillis = 300),
-                    shrinkTowards = Alignment.Start
-                )
-            ) {
-                SpatialPanel(
-                    modifier = SubspaceModifier
-                        .width(400.dp)
-                        .height(700.dp),
-                    dragPolicy = MovePolicy(isEnabled = true),
-                    resizePolicy = ResizePolicy(isEnabled = false)
-                ) {
-                    Surface {
-                        DescriptionAndCommentsPanel(
-                            post = uiState.selectedPost,
-                            onLikeClick = { postId -> onAction(HomeAction.LikePost(postId)) },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    // Floating close button (Orbiter)
-                    Orbiter(
-                        position = androidx.xr.compose.spatial.ContentEdge.Top,
-                        offset = 16.dp,
-                        alignment = androidx.compose.ui.Alignment.End
-                    ) {
-                        FilledTonalIconButton(
-                            onClick = { onAction(HomeAction.DeselectPost) },
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Close expanded view"
-                            )
-                        }
-                    }
                 }
             }
         }

@@ -38,6 +38,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.compose.platform.LocalSpatialConfiguration
 import androidx.xr.compose.spatial.ApplicationSubspace
@@ -101,7 +102,7 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     // Get ProfileViewModel for profile screen
     val profileViewModel: com.appbuildchat.instaxr.ui.profile.ProfileViewModel? =
         if (isProfileRoute && activity != null) {
-            androidx.lifecycle.viewmodel.compose.viewModel()
+            viewModel(viewModelStoreOwner = activity)
         } else null
 
     val homeUiState = homeViewModel?.uiState?.collectAsState()?.value

@@ -1,15 +1,6 @@
 package com.appbuildchat.instaxr.ui.profile
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,7 +15,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import com.appbuildchat.instaxr.ui.icons.CommentBubble
 import androidx.compose.material3.*
@@ -44,9 +37,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.xr.compose.spatial.Orbiter
 import androidx.xr.compose.spatial.Subspace
 import androidx.xr.compose.subspace.SpatialPanel
-import androidx.xr.compose.subspace.SpatialRow
 import androidx.xr.compose.subspace.layout.SubspaceModifier
 import androidx.xr.compose.subspace.layout.height
+import androidx.xr.compose.subspace.layout.offset
 import androidx.xr.compose.subspace.layout.width
 import androidx.xr.compose.subspace.MovePolicy
 import androidx.xr.compose.subspace.ResizePolicy
@@ -105,7 +98,7 @@ fun ProfileSpatialContent(
             }
             is ProfileUiState.Success -> {
                 if (uiState.selectedPost != null) {
-                    // EXPANDED STATE: Two panels (profile info + post detail)
+                    // EXPANDED STATE: Three independent panels (grid + media + comments)
                     ProfileScreenSpatialPanelsAnimated(
                         uiState = uiState,
                         onAction = onAction
@@ -179,127 +172,89 @@ fun ProfileScreenSpatialPanelsAnimated(
     onAction: (ProfileAction) -> Unit
 ) {
     if (uiState is ProfileUiState.Success && uiState.selectedPost != null) {
-        val leftPanelWidth by animateDpAsState(
-            targetValue = 250.dp,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            ),
-            label = "leftPanelWidth"
-        )
+        // Left panel - Thumbnail grid (independently movable)
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(250.dp)
+                .height(900.dp)
+                .offset(x = (-500).dp, y = 0.dp, z = 0.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
+        ) {
+            Surface {
+                ProfileMainContent(
+                    user = uiState.user,
+                    posts = uiState.posts,
+                    selectedTab = uiState.selectedTab,
+                    onAction = onAction,
+                    isCompact = true,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
 
-        SpatialRow {
-            // Left panel - Thumbnail grid
-            SpatialPanel(
-                modifier = SubspaceModifier
-                    .width(leftPanelWidth)
-                    .height(900.dp),
-                dragPolicy = MovePolicy(isEnabled = true),
-                resizePolicy = ResizePolicy(isEnabled = false)
-            ) {
-                Surface {
-                    ProfileMainContent(
-                        user = uiState.user,
-                        posts = uiState.posts,
-                        selectedTab = uiState.selectedTab,
-                        onAction = onAction,
-                        isCompact = true,
+        // Center panel - Large image (independently movable)
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(700.dp)
+                .height(900.dp)
+                .offset(x = 0.dp, y = 0.dp, z = 0.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    PostImageView(
+                        post = uiState.selectedPost,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
+
+                PostActionButtons(
+                    post = uiState.selectedPost,
+                    onLikeClick = { onAction(ProfileAction.ToggleLike(uiState.selectedPost.id)) },
+                    onMessageClick = { onAction(ProfileAction.SendMessage(uiState.selectedPost.id)) },
+                    onRepostClick = { onAction(ProfileAction.Repost(uiState.selectedPost.id)) },
+                    onArrowClick = { onAction(ProfileAction.ShowNextPost(uiState.selectedPost.id)) },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 32.dp)
+                )
             }
 
-            // Center panel - Large image
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                ) + expandHorizontally(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    expandFrom = Alignment.Start
-                ),
-                exit = fadeOut(
-                    animationSpec = tween(durationMillis = 300)
-                ) + shrinkHorizontally(
-                    animationSpec = tween(durationMillis = 300),
-                    shrinkTowards = Alignment.Start
-                )
+            // Close button orbiter
+            Orbiter(
+                position = androidx.xr.compose.spatial.ContentEdge.Top,
+                offset = 16.dp,
+                alignment = Alignment.End
             ) {
-                SpatialPanel(
-                    modifier = SubspaceModifier
-                        .width(700.dp)
-                        .height(900.dp),
-                    dragPolicy = MovePolicy(isEnabled = true),
-                    resizePolicy = ResizePolicy(isEnabled = true)
+                FilledTonalIconButton(
+                    onClick = { onAction(ProfileAction.DeselectPost) },
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Surface {
-                        PostImageView(
-                            post = uiState.selectedPost,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    // Close button orbiter
-                    Orbiter(
-                        position = androidx.xr.compose.spatial.ContentEdge.Top,
-                        offset = 16.dp,
-                        alignment = Alignment.End
-                    ) {
-                        FilledTonalIconButton(
-                            onClick = { onAction(ProfileAction.DeselectPost) },
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Close"
-                            )
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close"
+                    )
                 }
             }
 
-            // Right panel - Profile info + comments
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                ) + expandHorizontally(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    ),
-                    expandFrom = Alignment.Start
-                ),
-                exit = fadeOut(
-                    animationSpec = tween(durationMillis = 300)
-                ) + shrinkHorizontally(
-                    animationSpec = tween(durationMillis = 300),
-                    shrinkTowards = Alignment.Start
+        }
+
+        // Right panel - Profile info + comments (independently movable)
+        SpatialPanel(
+            modifier = SubspaceModifier
+                .width(400.dp)
+                .height(900.dp)
+                .offset(x = 500.dp, y = 0.dp, z = 0.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
+        ) {
+            Surface {
+                PostCommentsPanel(
+                    post = uiState.selectedPost,
+                    modifier = Modifier.fillMaxSize()
                 )
-            ) {
-                SpatialPanel(
-                    modifier = SubspaceModifier
-                        .width(400.dp)
-                        .height(900.dp),
-                    dragPolicy = MovePolicy(isEnabled = true),
-                    resizePolicy = ResizePolicy(isEnabled = false)
-                ) {
-                    Surface {
-                        PostCommentsPanel(
-                            post = uiState.selectedPost,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
             }
         }
     }
@@ -925,5 +880,96 @@ private fun formatCount(count: Int): String {
         count < 1000 -> count.toString()
         count < 10000 -> String.format("%.1fK", count / 1000.0)
         else -> String.format("%.0fK", count / 1000.0)
+    }
+}
+
+/**
+ * Post action buttons for XR mode (Instagram style)
+ */
+@Composable
+private fun PostActionButtons(
+    post: Post,
+    onLikeClick: () -> Unit,
+    onMessageClick: () -> Unit,
+    onRepostClick: () -> Unit,
+    onArrowClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large,
+        tonalElevation = 6.dp,
+        shadowElevation = 12.dp,
+        color = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Like button
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                IconButton(
+                    onClick = onLikeClick,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = if (post.isLiked) Icons.Filled.Favorite
+                                     else Icons.Filled.FavoriteBorder,
+                        contentDescription = "Like",
+                        tint = if (post.isLiked) MaterialTheme.colorScheme.error
+                              else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Text(
+                    text = formatCount(post.likeCount),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Message button
+            IconButton(
+                onClick = onMessageClick,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Send message",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            // Repost button
+            IconButton(
+                onClick = onRepostClick,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Repost",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            // Arrow button
+            IconButton(
+                onClick = onArrowClick,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Next",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
     }
 }
