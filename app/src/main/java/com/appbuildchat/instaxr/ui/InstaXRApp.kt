@@ -89,8 +89,9 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val activity = context as? androidx.activity.ComponentActivity
 
-    // Check routes
+    // Track current route to drive spatial layout decisions
     val isHomeRoute = currentRoute == AppRoutes.HOME
+    val isSearchRoute = currentRoute == AppRoutes.SEARCH
     val isReelsRoute = currentRoute == AppRoutes.REELS
     val isReelsDomeRoute = currentRoute == AppRoutes.REELS_DOME
     val isProfileRoute = currentRoute == AppRoutes.MY_PAGE
@@ -119,6 +120,12 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
             viewModel(viewModelStoreOwner = activity)
         } else null
 
+    // Get activity-scoped SearchViewModel (same instance as SearchScreen uses)
+    val searchViewModel: com.appbuildchat.instaxr.ui.search.SearchViewModel? =
+        if (isSearchRoute && activity != null) {
+            androidx.hilt.navigation.compose.hiltViewModel(viewModelStoreOwner = activity)
+        } else null
+
     val homeUiState = homeViewModel?.uiState?.collectAsState()?.value
     val hasSelectedPost = (homeUiState as? com.appbuildchat.instaxr.ui.home.HomeUiState.Success)?.selectedPost != null
 
@@ -127,6 +134,8 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
 
     val profileUiState = profileViewModel?.uiState?.collectAsState()?.value
     val hasSelectedProfilePost = (profileUiState as? com.appbuildchat.instaxr.ui.profile.ProfileUiState.Success)?.selectedPost != null
+    val searchUiState = searchViewModel?.uiState?.collectAsState()?.value
+    val isSearchFullSpace = (searchUiState as? com.appbuildchat.instaxr.ui.search.SearchUiState.Success)?.isFullSpaceMode == true
 
     // If on reels dome route, show dome carousel
     if (isReelsDomeRoute && reelsDomeViewModel != null && reelsDomeUiState != null) {
@@ -209,6 +218,49 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
                     NavigationItem(Icons.Default.Search, "Search", false) {
                         navController.navigateSingleTopTo(AppRoutes.SEARCH)
                     }
+                    NavigationItem(Icons.Default.Add, "Add", false) {
+                        navController.navigateSingleTopTo(AppRoutes.ADD_POST)
+                    }
+                    NavigationItem(Icons.Default.Email, "Messages", false) {
+                        navController.navigateSingleTopTo(AppRoutes.MESSAGES)
+                    }
+                    NavigationItem(Icons.Default.Person, "My Page", false) {
+                        navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
+                    }
+                    NavigationItem(Icons.Default.Settings, "Settings", false) {
+                        navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                    }
+                }
+            }
+        }
+    } else if (isSearchRoute && isSearchFullSpace && searchViewModel != null && searchUiState != null) {
+        // FULL SPACE MODE: Render search content directly
+        com.appbuildchat.instaxr.ui.search.SearchFullSpaceContent(
+            uiState = searchUiState,
+            onAction = searchViewModel::handleAction
+        )
+
+        // Show navigation orbiter
+        Orbiter(
+            position = ContentEdge.Bottom,
+            offset = 100.dp,
+            alignment = Alignment.CenterHorizontally
+        ) {
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(28.dp)),
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    NavigationItem(Icons.Default.Home, "Home", false) {
+                        navController.navigateSingleTopTo(AppRoutes.HOME)
+                    }
+                    NavigationItem(Icons.Default.Search, "Search", true) { /* Current */ }
                     NavigationItem(Icons.Default.Add, "Add", false) {
                         navController.navigateSingleTopTo(AppRoutes.ADD_POST)
                     }
@@ -335,72 +387,72 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
     } else {
         // NORMAL STATE: Main spatial panel with navigation
         SpatialPanel(
-        modifier = SubspaceModifier
-            .width(680.dp)
-            .height(800.dp),
-        dragPolicy = MovePolicy(isEnabled = true),
-        resizePolicy = ResizePolicy(isEnabled = true)
-    ) {
-        Surface {
-            AppNavigation(navController = navController)
-        }
-
-        // Home Space Mode Button (Top Right)
-        Orbiter(
-            position = ContentEdge.Bottom,
-            offset = 20.dp,
-            alignment = Alignment.End
+            modifier = SubspaceModifier
+                .width(680.dp)
+                .height(800.dp),
+            dragPolicy = MovePolicy(isEnabled = true),
+            resizePolicy = ResizePolicy(isEnabled = true)
         ) {
-            HomeSpaceModeIconButton(
-                onClick = onRequestHomeSpaceMode,
-                modifier = Modifier.size(56.dp)
-            )
-        }
+            Surface {
+                AppNavigation(navController = navController)
+            }
 
-        // Bottom Navigation Orbiter
-        Orbiter(
-            position = ContentEdge.Bottom,
-            offset = 100.dp,
-            alignment = Alignment.CenterHorizontally
-        ) {
-            Surface(
-                modifier = Modifier.clip(RoundedCornerShape(28.dp)),
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                tonalElevation = 3.dp,
-                shadowElevation = 8.dp
+            // Home Space Mode Button (Top Right)
+            Orbiter(
+                position = ContentEdge.Bottom,
+                offset = 20.dp,
+                alignment = Alignment.End
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                HomeSpaceModeIconButton(
+                    onClick = onRequestHomeSpaceMode,
+                    modifier = Modifier.size(56.dp)
+                )
+            }
+
+            // Bottom Navigation Orbiter
+            Orbiter(
+                position = ContentEdge.Bottom,
+                offset = 100.dp,
+                alignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    modifier = Modifier.clip(RoundedCornerShape(28.dp)),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    tonalElevation = 3.dp,
+                    shadowElevation = 8.dp
                 ) {
-                    NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
-                        navController.navigateSingleTopTo(AppRoutes.HOME)
-                    }
-                    NavigationItem(Icons.Default.PlayArrow, "Reels", currentRoute == AppRoutes.REELS) {
-                        navController.navigateSingleTopTo(AppRoutes.REELS)
-                    }
-                    // NavigationItem(Icons.Default.Star, "Dome", currentRoute == AppRoutes.REELS_DOME) {
-                    //     navController.navigateSingleTopTo(AppRoutes.REELS_DOME)
-                    // }
-                    NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
-                        navController.navigateSingleTopTo(AppRoutes.SEARCH)
-                    }
-                    NavigationItem(Icons.Default.Add, "Add", currentRoute == AppRoutes.ADD_POST) {
-                        navController.navigateSingleTopTo(AppRoutes.ADD_POST)
-                    }
-                    NavigationItem(Icons.Default.Email, "Messages", currentRoute == AppRoutes.MESSAGES) {
-                        navController.navigateSingleTopTo(AppRoutes.MESSAGES)
-                    }
-                    NavigationItem(Icons.Default.Person, "My Page", currentRoute == AppRoutes.MY_PAGE) {
-                        navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
-                    }
-                    NavigationItem(Icons.Default.Settings, "Settings", currentRoute == AppRoutes.SETTINGS) {
-                        navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        NavigationItem(Icons.Default.Home, "Home", currentRoute == AppRoutes.HOME) {
+                            navController.navigateSingleTopTo(AppRoutes.HOME)
+                        }
+                        NavigationItem(Icons.Default.PlayArrow, "Reels", currentRoute == AppRoutes.REELS) {
+                            navController.navigateSingleTopTo(AppRoutes.REELS)
+                        }
+                        // NavigationItem(Icons.Default.Star, "Dome", currentRoute == AppRoutes.REELS_DOME) {
+                        //     navController.navigateSingleTopTo(AppRoutes.REELS_DOME)
+                        // }
+                        NavigationItem(Icons.Default.Search, "Search", currentRoute == AppRoutes.SEARCH) {
+                            navController.navigateSingleTopTo(AppRoutes.SEARCH)
+                        }
+                        NavigationItem(Icons.Default.Add, "Add", currentRoute == AppRoutes.ADD_POST) {
+                            navController.navigateSingleTopTo(AppRoutes.ADD_POST)
+                        }
+                        NavigationItem(Icons.Default.Email, "Messages", currentRoute == AppRoutes.MESSAGES) {
+                            navController.navigateSingleTopTo(AppRoutes.MESSAGES)
+                        }
+                        NavigationItem(Icons.Default.Person, "My Page", currentRoute == AppRoutes.MY_PAGE) {
+                            navController.navigateSingleTopTo(AppRoutes.MY_PAGE)
+                        }
+                        NavigationItem(Icons.Default.Settings, "Settings", currentRoute == AppRoutes.SETTINGS) {
+                            navController.navigateSingleTopTo(AppRoutes.SETTINGS)
+                        }
                     }
                 }
             }
-        }
         }
     }
 }

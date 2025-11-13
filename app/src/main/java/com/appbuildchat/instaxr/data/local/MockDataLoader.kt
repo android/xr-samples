@@ -6,6 +6,7 @@ import com.appbuildchat.instaxr.data.model.Comment
 import com.appbuildchat.instaxr.data.model.LastMessage
 import com.appbuildchat.instaxr.data.model.Message
 import com.appbuildchat.instaxr.data.model.Post
+import com.appbuildchat.instaxr.data.model.Reel
 import com.appbuildchat.instaxr.data.model.User
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -63,6 +64,23 @@ data class MockMessage(
     val message: String,
     val timestamp: Long,
     val isMe: Boolean
+)
+
+@Serializable
+data class MockReel(
+    val id: String,
+    val userId: String,
+    val username: String,
+    val userProfileImageUrl: String?,
+    val videoUrl: String,
+    val thumbnailUrl: String?,
+    val caption: String?,
+    val likeCount: Int,
+    val commentCount: Int,
+    val viewCount: Int,
+    val isLiked: Boolean,
+    val isSaved: Boolean,
+    val timestamp: Long
 )
 
 /**
@@ -248,6 +266,40 @@ object MockDataLoader {
                     message = mockMessage.message,
                     timestamp = mockMessage.timestamp,
                     isMe = mockMessage.isMe
+                )
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    /**
+     * Load mock reels from JSON file
+     */
+    fun loadReels(context: Context): List<Reel> {
+        return try {
+            val jsonString = context.assets.open("mock_data/reels.json")
+                .bufferedReader()
+                .use { it.readText() }
+
+            val mockReels = json.decodeFromString<List<MockReel>>(jsonString)
+
+            mockReels.map { mockReel ->
+                Reel(
+                    id = mockReel.id,
+                    userId = mockReel.userId,
+                    username = mockReel.username,
+                    userProfileImageUrl = mockReel.userProfileImageUrl,
+                    videoUrl = mockReel.videoUrl,
+                    thumbnailUrl = mockReel.thumbnailUrl,
+                    caption = mockReel.caption,
+                    likeCount = mockReel.likeCount,
+                    commentCount = mockReel.commentCount,
+                    viewCount = mockReel.viewCount,
+                    isLiked = mockReel.isLiked,
+                    isSaved = mockReel.isSaved,
+                    timestamp = mockReel.timestamp
                 )
             }
         } catch (e: IOException) {
