@@ -14,7 +14,8 @@
       "Bash(adb shell:*)",
       "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb devices)",
       "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb install:*)",
-      "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb shell am start:*)"
+      "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb shell am start:*)",
+      "Bash(/Users/mouad/Library/Android/sdk/platform-tools/adb shell am force-stop com.appbuildchat.instaxr)"
     ],
     "deny": [],
     "ask": []
