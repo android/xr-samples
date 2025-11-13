@@ -126,7 +126,7 @@ private fun AboutContent(
             )
 
             // Additional Info
-            Divider(
+            HorizontalDivider(
                 color = MaterialTheme.colorScheme.outline,
                 thickness = 1.dp,
                 modifier = Modifier.padding(vertical = 20.dp)

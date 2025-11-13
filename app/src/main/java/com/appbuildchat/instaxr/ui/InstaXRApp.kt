@@ -225,7 +225,6 @@ fun SpatialContent(onRequestHomeSpaceMode: () -> Unit) {
             }
         }
     } else if (isHomeRoute && hasSelectedPost && homeViewModel != null && homeUiState != null) {
->>>>>>> main
         // EXPANDED STATE: Three separate spatial panels
         // Note: hasSelectedPost being true guarantees homeViewModel and homeUiState are non-null
         val viewModel = homeViewModel!!
