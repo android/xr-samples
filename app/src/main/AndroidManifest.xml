@@ -44,6 +44,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ProjectedActivity"
+            android:exported="false"
+            android:requiredDisplayCategory="android.hardware.display.category.XR_PROJECTED"
+            android:theme="@style/Theme.HelloAndroidXR" />
     </application>
 
 </manifest>

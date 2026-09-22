@@ -48,6 +48,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.os.Build
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.xr.projected.ProjectedContext
+import androidx.xr.projected.experimental.ExperimentalProjectedApi
+import com.example.helloandroidxr.ProjectedActivity
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
@@ -404,6 +412,7 @@ private fun BlockOfContentOne(
     }
 }
 
+@OptIn(ExperimentalProjectedApi::class)
 @Composable
 private fun BlockOfContentTwo(
     modifier: Modifier = Modifier,
@@ -427,7 +436,31 @@ private fun BlockOfContentTwo(
             modifier = modifier
         )
     } else {
-        TextPane(stringResource(R.string.block_of_content_2), modifier = modifier.fillMaxHeight())
+        Box(modifier = modifier.fillMaxHeight()) {
+            TextPane(stringResource(R.string.block_of_content_2), modifier = Modifier.fillMaxSize())
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                val context = LocalContext.current
+                val isGlassesConnected by remember(context) {
+                    ProjectedContext.isProjectedDeviceConnected(context, Dispatchers.Default)
+                }.collectAsState(initial = false)
+
+                if (isGlassesConnected) {
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            val options = ProjectedContext.createProjectedActivityOptions(context)
+                            val intent = Intent(context, ProjectedActivity::class.java)
+                            context.startActivity(intent, options.toBundle())
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp)
+                    ) {
+                        Text("Launch on Glasses")
+                    }
+                }
+            }
+        }
     }
 }
 
