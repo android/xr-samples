@@ -122,6 +122,7 @@ data class BugdroidUiState(
     val animateBugdroid: Boolean = false,
     val visibleSliderGroup: SliderGroup = SliderGroup.NONE,
     val modelTransform: ModelTransform = ModelTransform(),
+    val capturedCommand: String = "",
 )
 
 class BugdroidViewModel : ViewModel() {
@@ -134,6 +135,10 @@ class BugdroidViewModel : ViewModel() {
     private var gltfModel: GltfModel? = null
     private var gltfEntity: GltfModelEntity? = null
     private var pbrMaterial: KhronosPbrMaterial? = null
+
+    fun updateCapturedCommand(command: String) {
+        _uiState.update { it.copy(capturedCommand = command) }
+    }
 
     fun initSession(session: Session) {
         if (this.xrSession == session) return

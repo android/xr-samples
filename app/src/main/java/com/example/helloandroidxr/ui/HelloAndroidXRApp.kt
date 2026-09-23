@@ -55,6 +55,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.xr.projected.ProjectedContext
 import androidx.xr.projected.experimental.ExperimentalProjectedApi
 import com.example.helloandroidxr.ProjectedActivity
+import com.example.helloandroidxr.CommandBroadcaster
 import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -108,6 +109,12 @@ fun HelloAndroidXRApp() {
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(Unit) {
+        CommandBroadcaster.setCallback { command ->
+            viewModel.updateCapturedCommand(command)
+        }
+    }
     if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
         SpatialLayout(
             primaryContent = {
@@ -143,7 +150,8 @@ fun HelloAndroidXRApp() {
                     modifier = Modifier.height(240.dp),
                     showBugdroid = uiState.showBugdroid,
                     onSliderGroupSelected = viewModel::updateShownSliderGroup,
-                    onResetModel = viewModel::resetModel
+                    onResetModel = viewModel::resetModel,
+                    capturedCommand = uiState.capturedCommand
                 )
                 BlockOfContentTwo(
                     uiState = uiState,
@@ -396,7 +404,8 @@ private fun BlockOfContentOne(
     modifier: Modifier = Modifier,
     showBugdroid: Boolean,
     onSliderGroupSelected: (SliderGroup) -> Unit,
-    onResetModel: () -> Unit
+    onResetModel: () -> Unit,
+    capturedCommand: String = ""
 ) {
     if (LocalSpatialCapabilities.current.isContent3dEnabled && showBugdroid) {
         BugdroidControls(
@@ -408,7 +417,17 @@ private fun BlockOfContentOne(
             modifier = modifier
         )
     } else {
-        TextPane(stringResource(R.string.block_of_content_1), modifier = modifier.fillMaxHeight())
+        Column(modifier = modifier.fillMaxHeight()) {
+            TextPane(stringResource(R.string.block_of_content_1), modifier = Modifier.weight(1f))
+
+            if (capturedCommand.isNotEmpty()) {
+                Text(
+                    text = "Last command: $capturedCommand",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
     }
 }
 
