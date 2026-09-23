@@ -20,6 +20,7 @@
     <!-- Indicates that the app makes use of XR spatial APIs, but this isn't a requirement that
     should block installing the app -->
     <uses-feature android:name="android.software.xr.api.spatial" android:required="false" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -44,6 +45,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ProjectedActivity"
+            android:exported="false"
+            android:requiredDisplayCategory="android.hardware.display.category.XR_PROJECTED"
+            android:theme="@style/Theme.HelloAndroidXR" />
     </application>
 
 </manifest>

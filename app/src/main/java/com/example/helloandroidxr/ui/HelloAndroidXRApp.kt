@@ -48,6 +48,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.os.Build
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.xr.projected.ProjectedContext
+import androidx.xr.projected.experimental.ExperimentalProjectedApi
+import com.example.helloandroidxr.ProjectedActivity
+import com.example.helloandroidxr.CommandBroadcaster
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
@@ -100,6 +109,12 @@ fun HelloAndroidXRApp() {
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(Unit) {
+        CommandBroadcaster.setCallback { command ->
+            viewModel.updateCapturedCommand(command)
+        }
+    }
     if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
         SpatialLayout(
             primaryContent = {
@@ -135,7 +150,8 @@ fun HelloAndroidXRApp() {
                     modifier = Modifier.height(240.dp),
                     showBugdroid = uiState.showBugdroid,
                     onSliderGroupSelected = viewModel::updateShownSliderGroup,
-                    onResetModel = viewModel::resetModel
+                    onResetModel = viewModel::resetModel,
+                    capturedCommand = uiState.capturedCommand
                 )
                 BlockOfContentTwo(
                     uiState = uiState,
@@ -388,7 +404,8 @@ private fun BlockOfContentOne(
     modifier: Modifier = Modifier,
     showBugdroid: Boolean,
     onSliderGroupSelected: (SliderGroup) -> Unit,
-    onResetModel: () -> Unit
+    onResetModel: () -> Unit,
+    capturedCommand: String = ""
 ) {
     if (LocalSpatialCapabilities.current.isContent3dEnabled && showBugdroid) {
         BugdroidControls(
@@ -400,10 +417,21 @@ private fun BlockOfContentOne(
             modifier = modifier
         )
     } else {
-        TextPane(stringResource(R.string.block_of_content_1), modifier = modifier.fillMaxHeight())
+        Column(modifier = modifier.fillMaxHeight()) {
+            TextPane(stringResource(R.string.block_of_content_1), modifier = Modifier.weight(1f))
+
+            if (capturedCommand.isNotEmpty()) {
+                Text(
+                    text = "Last command: $capturedCommand",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
     }
 }
 
+@OptIn(ExperimentalProjectedApi::class)
 @Composable
 private fun BlockOfContentTwo(
     modifier: Modifier = Modifier,
@@ -427,7 +455,31 @@ private fun BlockOfContentTwo(
             modifier = modifier
         )
     } else {
-        TextPane(stringResource(R.string.block_of_content_2), modifier = modifier.fillMaxHeight())
+        Box(modifier = modifier.fillMaxHeight()) {
+            TextPane(stringResource(R.string.block_of_content_2), modifier = Modifier.fillMaxSize())
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                val context = LocalContext.current
+                val isGlassesConnected by remember(context) {
+                    ProjectedContext.isProjectedDeviceConnected(context, Dispatchers.Default)
+                }.collectAsState(initial = false)
+
+                if (isGlassesConnected) {
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            val options = ProjectedContext.createProjectedActivityOptions(context)
+                            val intent = Intent(context, ProjectedActivity::class.java)
+                            context.startActivity(intent, options.toBundle())
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp)
+                    ) {
+                        Text("Launch on Glasses")
+                    }
+                }
+            }
+        }
     }
 }
 
